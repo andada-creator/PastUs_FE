@@ -23,27 +23,34 @@ export default function Login() {
     setErrorMsg('');
 
     try {
-      // 명세서 기반 백엔드 통신
-      const response = await fetch('http://백엔드서버주소/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ loginId: id, password: pw }), 
-      });
+        const response = await fetch('http://백엔드서버주소/api/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ loginId: id, password: pw }), 
+        });
 
-      const data = await response.json();
+        const result = await response.json(); // 변수명을 result로 바꿔서 생각하면 더 쉬워요.
 
-      if (response.ok) {
-        // 토큰 안전 저장 및 홈으로 이동
-        await SecureStore.setItemAsync('userToken', data.accessToken);
-        router.replace('/(tabs)/home');
-      } else {
-        // 디자인 이미지의 에러 메시지 형식
-        setErrorMsg(data.message || '아이디/비밀번호가 다릅니다. 다시 확인해주세요');
-      }
+        if (response.ok) {
+    // 명세서 경로: result(전체) -> data -> token -> accessToken
+            const token = result.data.token.accessToken;
+            const userId = result.data.user.userId;
+
+            if (token) {
+                await SecureStore.setItemAsync('userToken', token);
+      // 나중에 API 호출할 때 필요할 수 있으니 userId도 저장하면 좋습니다.
+                await SecureStore.setItemAsync('userId', String(userId)); 
+      
+                router.replace('/(tabs)/home');
+            }
+        } else {
+    // 에러 메시지도 result.message에 들어있습니다.
+        setErrorMsg(result.message || '아이디 또는 비밀번호가 올바르지 않습니다.');
+    }
     } catch (error) {
-      Alert.alert("연결 에러", "서버와 통신할 수 없습니다.");
+        Alert.alert("연결 에러", "서버와 통신할 수 없습니다.");
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
@@ -77,7 +84,7 @@ export default function Login() {
           onChangeText={setPw} 
           secureTextEntry 
         />
-        <Pressable style={styles.forgotPw}>
+        <Pressable style={styles.forgotPw} onPress={() => router.push('/auth/forgot-password')}>
           <Text style={styles.forgotPwText}>비밀번호를 잊으셨나요?</Text>
         </Pressable>
       </View>
