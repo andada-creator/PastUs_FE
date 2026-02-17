@@ -77,7 +77,7 @@ export default function SignupStep2() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.step2Container}>
       <Text style={styles.title}>PastUs</Text>
 
       {/* 아이디 입력 영역 */}

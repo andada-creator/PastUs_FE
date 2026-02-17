@@ -8,9 +8,12 @@ import { Ionicons } from '@expo/vector-icons';
 // 🚀 API 함수 임포트 추가!
 import { checkPhoneDuplicate } from '../../../src/api/authService'; 
 import { termsData } from '../../../src/constants/terms';
-import { formatPhone, formatAuthCode, checkIsUnder14 } from '../../../src/utils/signupUtils';
+import { formatTime, TIMER_COLORS, formatPhone, formatAuthCode, checkIsUnder14 } from '../../../src/utils/signupUtils';
 import { styles, modalStyles } from '../../../src/styles/authStyles';
 import { AgreementItem } from '../../../src/components/auth/AgreementItem';
+
+import { useTimer } from '../../../src/hooks/useTimer'; // 🚀 커스텀 훅 추가
+
 
 export default function SignupStep1() {
   const router = useRouter();
@@ -24,8 +27,7 @@ export default function SignupStep1() {
   const [phoneMessage, setPhoneMessage] = useState('');
   
   //흐름 및 에러 상태
-  const [isSent, setIsSent] = useState(false);
-  const [timer, setTimer] = useState(147); 
+  const { timer, isActive: isSent, startTimer, resetTimer } = useTimer(147);
   const [showAgeError, setShowAgeError] = useState(false);
   const [showMissingError, setShowMissingError] = useState(false);
 
@@ -59,14 +61,6 @@ export default function SignupStep1() {
     setModalVisible(false);
   };
 
-  //타이머 로직
-  useEffect(() => {
-    let interval;
-    if (isSent && timer > 0) {
-      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isSent, timer]);
 
   //다음 단계로 이동 전 유효성 검사
   const isBasicInfoComplete = 
@@ -81,21 +75,26 @@ export default function SignupStep1() {
       return;
     }
 
-    const hyphenPhone = rawPhone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+    
 
     try {
+      const hyphenPhone = rawPhone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
       const result = await checkPhoneDuplicate(hyphenPhone);
       if (result.available) {
-        setIsSent(true);
-        setTimer(147);
+        startTimer();
         setPhoneMessage('');
         Alert.alert("인증번호 발송", result.message);
       } else {
         setPhoneMessage(result.message);
-        setIsSent(false);
+       
       }
     } catch (error) {
-      Alert.alert("알림", "서버 통신 중 오류가 발생했습니다.");
+        // 💡 3. 현재 "통신 오류"가 뜨는 이유는 API_URL이 가짜이기 때문입니다.
+    // 테스트용으로 타이머를 돌려보고 싶다면 아래 두 줄의 주석을 해제하세요!
+    // setIsSent(true); 
+    // setTimer(147);
+      setPhoneMessage("서버 연결 실패 (API 주소를 확인해주세요)");
+      
     }
   };
 
@@ -131,7 +130,7 @@ export default function SignupStep1() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 50 }}>
+    <ScrollView style={styles.step1Container} contentContainerStyle={ styles.step1ScrollContent}>
       <Text style={styles.title}>PastUs</Text>
 
       <View style={styles.inputGroup}>
@@ -166,7 +165,11 @@ export default function SignupStep1() {
           style={[styles.input, phoneMessage !== '' && styles.inputError]} 
           placeholder="010 1234 5678" 
           value={phone} 
-          onChangeText={(t) => setPhone(formatPhone(t))}
+          onChangeText={(t) => {
+            setPhone(formatPhone(t)); 
+            setPhoneMessage('');
+
+          }}
           keyboardType="numeric" 
           maxLength={13} 
         />
@@ -184,14 +187,14 @@ export default function SignupStep1() {
             keyboardType="numeric" 
             maxLength={11} 
           />
-          <View style={styles.sendButtonWrapper}>
+          <View style={styles.timerColumn}>
             
             <Pressable style={styles.sendButton} onPress={handleSendAuthCode}>
                 <Text style={styles.sendButtonText}>{isSent ? "재전송" : "전송"}</Text>
             </Pressable>
             {isSent && (
-                <Text style={styles.timerAbsolute}>
-                    {Math.floor(timer/60)} : {String(timer%60).padStart(2,'0')}
+                <Text style={styles.timerTextBelow}>
+                    {formatTime(timer)}
                 </Text>
             )}
           </View>
