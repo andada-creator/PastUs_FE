@@ -6,6 +6,7 @@ import { styles } from '../../../src/styles/authStyles'; // 🚀 통일된 스�
 import { checkAccountExists } from '../../../src/api/authService';
 import { useTimer } from '../../../src/hooks/useTimer';
 import { formatTime, formatAuthCode } from '../../../src/utils/signupUtils';
+import { verifyAuthCode } from '../../../src/api/authService';
 
 export default function ForgotPassword() {
   const router = useRouter();

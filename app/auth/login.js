@@ -1,68 +1,66 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, Pressable, StyleSheet, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, TextInput, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+//import client from '../../src/api/client'; // [핵심] 우리가 만든 axios 인스턴스 임포트
+import { loginUser } from '../../src/api/authService';
 
 export default function Login() {
   const router = useRouter();
   
-  // 1. 기존 로직 상태 유지
   const [id, setId] = useState('');
   const [pw, setPw] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    // 필수 입력 체크
-    if (!id || !pw) {
-      setErrorMsg('아이디와 비밀번호를 모두 입력해주세요.');
-      return;
-    }
+  if (!id || !pw) {
+    setErrorMsg('아이디와 비밀번호를 모두 입력해주세요.');
+    return;
+  }
 
-    setIsLoading(true);
-    setErrorMsg('');
+  setIsLoading(true);
+  setErrorMsg('');
 
-    try {
-        const response = await fetch('http://백엔드서버주소/api/v1/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ loginId: id, password: pw }), 
-        });
+  try {
+    // 🚀 [수정] client.post 대신 우리가 만든 loginUser를 호출합니다.
+    // 그래야 'test/1234' 치트키가 먹힙니다!
+    const result = await loginUser(id, pw); 
 
-        const result = await response.json(); // 변수명을 result로 바꿔서 생각하면 더 쉬워요.
-
-        if (response.ok) {
-    // 명세서 경로: result(전체) -> data -> token -> accessToken
-            const token = result.data.token.accessToken;
-            const userId = result.data.user.userId;
-
-            if (token) {
-                await SecureStore.setItemAsync('userToken', token);
-      // 나중에 API 호출할 때 필요할 수 있으니 userId도 저장하면 좋습니다.
-                await SecureStore.setItemAsync('userId', String(userId)); 
+    // 🚀 [주의] authService의 Mock 응답 구조와 화면의 기대치가 맞아야 합니다.
+    if (result.status === 200 || result.status === "200") {
       
-                router.replace('/(tabs)/home');
-            }
-        } else {
-    // 에러 메시지도 result.message에 들어있습니다.
-        setErrorMsg(result.message || '아이디 또는 비밀번호가 올바르지 않습니다.');
-    }
-    } catch (error) {
-        Alert.alert("연결 에러", "서버와 통신할 수 없습니다.");
-    } finally {
-        setIsLoading(false);
-    }
-  };
+      // 현재 Login.js는 result.data.token.accessToken을 찾고 있죠?
+      // Mock 데이터(authService.js)도 이 구조와 똑같이 맞춰줘야 터지지 않습니다.
+      const token = result.data.token.accessToken; 
+      const userId = result.data.user.userId;
 
+      if (token) {
+        await SecureStore.setItemAsync('userToken', token);
+        await SecureStore.setItemAsync('userId', String(userId));
+        router.replace('/(tabs)/main'); // 메인으로 입성!
+      }
+    } else {
+      // 아이디/비번이 틀렸을 때 (Mock에서 401 등을 줬을 때)
+      setErrorMsg(result.message || '아이디 또는 비밀번호가 올바르지 않습니다.');
+    }
+  } catch (error) {
+    // 실제 네트워크 자체가 안 될 때만 여기로 옵니다.
+    setErrorMsg('아이디 또는 비밀번호가 올바르지 않습니다.');
+    if (!error.response) {
+      Alert.alert("연결 에러", "네트워크 상태를 확인해주세요.");
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* 로고 및 서비스 설명 */}
       <Text style={styles.title}>PastUs</Text>
       <Text style={styles.subtitle}>
         여러 사람의 과거의 선택과 경험을 모아{"\n"}지금의 나에게 힌트를 주는 서비스
       </Text>
 
-      {/* 아이디 입력창 */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>아이디</Text>
         <TextInput 
@@ -74,7 +72,6 @@ export default function Login() {
         />
       </View>
 
-      {/* 비밀번호 입력창 */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>비밀번호</Text>
         <TextInput 
@@ -89,12 +86,10 @@ export default function Login() {
         </Pressable>
       </View>
 
-      {/* 에러 메시지 영역 */}
       <View style={styles.errorContainer}>
         {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
       </View>
 
-      {/* 로그인 및 로딩 스피너 */}
       {isLoading ? (
         <ActivityIndicator size="large" color="#2B57D0" style={{ marginVertical: 20 }} />
       ) : (
@@ -108,7 +103,6 @@ export default function Login() {
         </>
       )}
 
-      {/* 간편 로그인 섹션 */}
       <View style={styles.separatorContainer}>
         <View style={styles.line} />
         <Text style={styles.orText}>or</Text>
@@ -124,13 +118,13 @@ export default function Login() {
   );
 }
 
-// 소셜 버튼 컴포넌트
 const SocialBtn = ({ platform, color, textColor, borderColor = 'transparent' }) => (
   <Pressable style={[styles.socialButton, { backgroundColor: color, borderColor, borderWidth: borderColor === '#eee' ? 1 : 0 }]}>
     <Text style={[styles.socialText, { color: textColor }]}>{platform}로 시작하기</Text>
   </Pressable>
 );
 
+// 스타일은 기존과 동일하게 유지
 const styles = StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: '#fff', padding: 30, paddingTop: 60 },
   title: { fontSize: 60, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, fontFamily: 'serif' },
