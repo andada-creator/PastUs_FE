@@ -107,10 +107,27 @@ export default function MainScreen() {
         </View>
       </ScrollView>
 
-      {/* 6. 플로팅 버튼 (+) */}
-      <Pressable style={styles.fab} onPress={() => router.push('/posts/create')}>
-        <Text style={styles.fabText}>+</Text>
-      </Pressable>
+      {/* 🚀 [핵심] 하단 탭 바 섹션 */}
+      <View style={styles.bottomTab}>
+        {/* 홈 버튼 */}
+        <Pressable style={styles.tabItem} onPress={() => router.replace('/(tabs)/main')}>
+          <Ionicons name="home" size={24} color="#000" />
+          <Text style={styles.tabLabel}>홈</Text>
+        </Pressable>
+
+        {/* 플러스(+) 플로팅 버튼 */}
+        <View style={styles.fabWrapper}>
+          <Pressable style={styles.fab} onPress={() => router.push('/posts/create')}>
+            <Text style={styles.fabIcon}>+</Text>
+          </Pressable>
+        </View>
+
+        {/* 마이페이지 버튼 */}
+        <Pressable style={styles.tabItem} onPress={() => router.push('/profile')}>
+          <Ionicons name="person" size={24} color="#333" />
+          <Text style={styles.tabLabel}>마이페이지</Text>
+        </Pressable>
+      </View>
       
     </SafeAreaView> // 🚀 여기서 닫아야 모든 콘텐츠가 안전 영역 안에 들어옵니다!
   );
@@ -138,11 +155,42 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold' },
   more: { fontSize: 22, color: '#999' },
-  fab: { 
-    position: 'absolute', bottom: 30, right: 30, 
-    backgroundColor: '#B5C7F7', width: 60, height: 60, borderRadius: 30, 
-    justifyContent: 'center', alignItems: 'center', elevation: 5 
+  /* 🚀 하단 탭 바 스타일 */
+  bottomTab: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: 70,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    paddingBottom: 10
   },
-  fabText: { color: '#fff', fontSize: 35, fontWeight: '300' }
+  tabItem: { alignItems: 'center', justifyContent: 'center', width: 80 },
+  tabLabel: { fontSize: 10, marginTop: 4, fontWeight: '600' },
+  
+  /* 🚀 플러스 버튼 스타일 */
+  fabWrapper: {
+    top: -25, // 탭 바 위로 툭 튀어나오게 설정
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fab: {
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
+    backgroundColor: '#B5C7F7', // 시안의 연한 파란색
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8, // 안드로이드 그림자
+    shadowColor: '#000', // iOS 그림자
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+  },
+  fabIcon: { fontSize: 40, color: '#fff', fontWeight: '300', marginBottom: 4 }
 });
 
