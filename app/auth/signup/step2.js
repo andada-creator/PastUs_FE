@@ -4,29 +4,27 @@ import React, { useState } from 'react';
 import { View, TextInput, Text, Pressable, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
-// 분리된 자원들 임포트
+// 🚀 [수정] 통일된 스타일과 서비스 함수 임포트
 import { styles } from '../../../src/styles/authStyles';
 import { checkIdDuplicate, signupUser } from '../../../src/api/authService';
 
 export default function SignupStep2() {
   const router = useRouter();
-  
-  // 1. Step 1에서 넘어온 데이터 보따리 풀기
   const params = useLocalSearchParams(); 
 
-  // 2. 입력값 및 상태 관리
   const [id, setId] = useState('');
   const [idMessage, setIdMessage] = useState('');
   const [isIdAvailable, setIsIdAvailable] = useState(false);
   const [pw, setPw] = useState('');
   const [pwCheck, setPwCheck] = useState('');
 
-  // 3. 아이디 중복 체크 (실제 API 연결)
+  // 1. 아이디 중복 체크 (서비스 함수 호출로 다이어트!)
   const handleIdChange = async (text) => {
     setId(text);
-    // 4~10자 사이일 때만 서버에 물어봅니다
+    
     if (text.length >= 4 && text.length <= 10) {
-      const result = await checkIdDuplicate(text); // 우리가 만든 API 함수
+      // 🚀 authService 내부의 테스트 모드 로직이 실행됩니다.
+      const result = await checkIdDuplicate(text);
       setIsIdAvailable(result.available);
       setIdMessage(result.message);
     } else {
@@ -35,15 +33,13 @@ export default function SignupStep2() {
     }
   };
 
-  // 4. 유효성 검사 로직
+  // 2. 유효성 검사 로직 (실시간 반영)
   const isPwMismatch = pw !== pwCheck && pwCheck.length > 0;
-  // 버튼 활성화: 아이디 사용 가능 + 비번 입력됨 + 비번 일치
   const isSubmitDisabled = !isIdAvailable || !pw || !pwCheck || isPwMismatch;
 
-  // 5. 최종 회원가입 함수
+  // 3. 최종 회원가입 함수
   const handleSignup = async () => {
     try {
-      // params에서 꺼내올 때 안전하게 처리
       const formattedBirth = (params.birth || "").replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
       const formattedPhone = (params.phone || "").replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
       
@@ -59,17 +55,18 @@ export default function SignupStep2() {
         marketingConsent: params.marketingConsent === 'true',
       };
 
-      console.log("서버 전송 데이터:", finalData);
+      console.log("🛠️ 회원가입 시도 데이터:", finalData);
 
-      // 분리해둔 signupUser API 함수 호출
+      // 🚀 서비스 함수 호출 (테스트 모드일 땐 가짜 성공 반환)
       const response = await signupUser(finalData);
 
-      if (response.ok) {
-        Alert.alert("가입 완료", `${params.userName}님, 환영합니다!`);
-        router.replace('/auth/login');
+      // axios 응답(response.status) 또는 가짜 응답 처리
+      if (response.status === 200 || response.status === "200") {
+        Alert.alert("가입 완료", `${params.userName}님, 환영합니다!`, [
+          { text: "확인", onPress: () => router.replace('/auth/login') }
+        ]);
       } else {
-        const errorData = await response.json();
-        Alert.alert("가입 실패", errorData.message || "정보를 다시 확인해주세요.");
+        Alert.alert("가입 실패", response.message || "정보를 다시 확인해주세요.");
       }
     } catch (error) {
       Alert.alert("에러", "서버와 통신 중 문제가 발생했습니다.");
@@ -84,15 +81,13 @@ export default function SignupStep2() {
       <View style={styles.inputGroup}>
         <Text style={styles.label}>아이디</Text>
         <TextInput
-          // 에러가 있을 때만 빨간 테두리 적용
           style={[styles.input, idMessage && !isIdAvailable && styles.inputError]}
           placeholder="아이디를 입력해주세요"
           value={id}
-          onChangeText={handleIdChange} // setId 대신 handleIdChange 사용!
+          onChangeText={handleIdChange}
           autoCapitalize="none"
           maxLength={10}
         />
-        {/* 서버 메시지 또는 유효성 메시지 표시 */}
         {idMessage ? (
           <Text style={isIdAvailable ? styles.successText : styles.errorText}>
             {idMessage}
@@ -136,4 +131,3 @@ export default function SignupStep2() {
     </View>
   );
 }
-

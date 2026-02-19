@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 // 🚀 API 함수 임포트 추가!
-import { checkPhoneDuplicate } from '../../../src/api/authService'; 
+import {requestSignupAuth, verifyAuthCode } from '../../../src/api/authService'; 
 import { termsData } from '../../../src/constants/terms';
 import { formatTime, TIMER_COLORS, formatPhone, formatAuthCode, checkIsUnder14 } from '../../../src/utils/signupUtils';
 import { styles, modalStyles } from '../../../src/styles/authStyles';
@@ -70,44 +70,68 @@ export default function SignupStep1() {
 
   const handleSendAuthCode = async () => {
     const rawPhone = phone.replace(/\s/g, ''); 
+    const hyphenPhone = rawPhone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
     if (rawPhone.length < 11) {
       setShowMissingError(true);
       return;
     }
 
-    
+    // 로딩 상태나 초기화 로직
+  setShowMissingError(false);
 
+  /*// 🚀 테스트용 가짜 로직 (서버 연결 없이 확인 가능)
+  try {
+    // 실제 서버 호출 대신 성공했다고 가정합니다.
+    const isTestMode = true; // 테스트를 위해 true로 설정
+
+    if (isTestMode) {
+      startTimer(); // 타이머 시작
+      setPhoneMessage(''); // 에러 메시지 초기화
+      Alert.alert("인증번호 발송", "테스트용 인증번호(123456)가 발송되었습니다.");
+      return;
+    }*/
+
+    // --- 아래는 실제 서버 연결 시 작동하는 코드 ---
     try {
-      const hyphenPhone = rawPhone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
-      const result = await checkPhoneDuplicate(hyphenPhone);
-      if (result.available) {
+      
+      const result = await requestSignupAuth(hyphenPhone);
+      if (result.status === 200 || result.status === "200") {
         startTimer();
         setPhoneMessage('');
         Alert.alert("인증번호 발송", result.message);
       } else {
         setPhoneMessage(result.message);
-       
       }
     } catch (error) {
-        // 💡 3. 현재 "통신 오류"가 뜨는 이유는 API_URL이 가짜이기 때문입니다.
-    // 테스트용으로 타이머를 돌려보고 싶다면 아래 두 줄의 주석을 해제하세요!
-    // setIsSent(true); 
-    // setTimer(147);
+    
       setPhoneMessage("서버 연결 실패 (API 주소를 확인해주세요)");
       
     }
   };
 
-  const handleNextPress = () => {
+  const handleNextPress = async () => {
     setShowAgeError(false);
     setShowMissingError(false);
 
     const rawAuth = authCode.replace(/\s/g, '');
     const rawPhone = phone.replace(/\s/g, '');
+    const hyphenPhone = rawPhone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
  
     // 필수 약관 체크 로직 (agree1, 2, 4 필수)
     const isMissing = rawAuth.length < 6 || !agree1 || !agree2 || !agree4 || name === '' || birth.length < 8;
+    // 2. 🚀 인증번호 진짜 맞는지 확인 (추가된 부분!)
+  try {
+    // 우리가 authService에 만든 그 함수를 여기서 부릅니다.
+    const verifyResult = await verifyAuthCode(hyphenPhone, rawAuth, "SIGNUP");
     
+    if (verifyResult.status !== "200" && verifyResult.status !== 200) {
+      Alert.alert("인증 실패", verifyResult.message || "인증번호가 올바르지 않습니다.");
+      return; // 틀리면 여기서 중단!
+    }
+  } catch (error) {
+    Alert.alert("오류", "인증 확인 중 문제가 발생했습니다.");
+    return;
+  }
     if (isMissing) {
       setShowMissingError(true);
       return;
