@@ -10,6 +10,7 @@ export default function PopularListScreen() {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     const fetchPopular = async () => {

@@ -107,27 +107,7 @@ export default function MainScreen() {
         </View>
       </ScrollView>
 
-      {/* 🚀 [핵심] 하단 탭 바 섹션 */}
-      <View style={styles.bottomTab}>
-        {/* 홈 버튼 */}
-        <Pressable style={styles.tabItem} onPress={() => router.replace('/(tabs)/main')}>
-          <Ionicons name="home" size={24} color="#000" />
-          <Text style={styles.tabLabel}>홈</Text>
-        </Pressable>
-
-        {/* 플러스(+) 플로팅 버튼 */}
-        <View style={styles.fabWrapper}>
-          <Pressable style={styles.fab} onPress={() => router.push('/posts/create')}>
-            <Text style={styles.fabIcon}>+</Text>
-          </Pressable>
-        </View>
-
-        {/* 마이페이지 버튼 */}
-        <Pressable style={styles.tabItem} onPress={() => router.push('/profile')}>
-          <Ionicons name="person" size={24} color="#333" />
-          <Text style={styles.tabLabel}>마이페이지</Text>
-        </Pressable>
-      </View>
+      
       
     </SafeAreaView> // 🚀 여기서 닫아야 모든 콘텐츠가 안전 영역 안에 들어옵니다!
   );
@@ -192,7 +172,7 @@ const styles = StyleSheet.create({
     fontSize: 18,        // 피그마 명세
     fontWeight: '600',    // 피그마 명세 (SemiBold)
     lineHeight: 22,      // 피그마 명세
-    color: '#000' 
+    color:'#000' 
   },
   more: { 
     fontSize: 20, 
@@ -221,56 +201,4 @@ const styles = StyleSheet.create({
     fontWeight: '700' 
   },
 
-  /* 🚀 5. 하단 탭 바: 입체감 있는 그림자 적용 */
-  bottomTab: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    height: 85,
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingBottom: 25,
-    // 그림자 설정 (iOS & Android)
-    borderTopWidth: 0,
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  tabItem: { 
-    alignItems: 'center', 
-    width: 60 
-  },
-  tabLabel: { 
-    fontSize: 11, 
-    marginTop: 4, 
-    fontWeight: '500',
-    color: '#000'
-  },
-
-  /* 🚀 6. 플로팅 플러스 버튼 (FAB) */
-  fabWrapper: {
-    top: -20,
-  },
-  fab: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: '#B5C7F7', // 시안 특유의 연블루
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-  },
-  fabIcon: { 
-    fontSize: 40, 
-    color: '#fff', 
-    fontWeight: '200' 
-  }
 });

@@ -15,6 +15,7 @@ export const checkIdDuplicate = async (loginId) => {
     const response = await client.post('/auth/verify-id', { loginId });
     return response.data;
   } catch (error) {
+    console.error("아이디 중복 확인 에러:", error.response?.data || error.message);
     return { available: false, message: error.response?.data?.message || "중복 확인 오류" };
   }
 };
@@ -29,6 +30,7 @@ export const checkPhoneDuplicate = async (phoneNumber) => {
     const response = await client.post('/auth/verify-phone', { phoneNumber });
     return response.data;
   } catch (error) {
+    console.error("번호 중복 확인 에러:", error.response?.data || error.message);
     return { available: false, message: error.response?.data?.message || "번호 확인 오류" };
   }
 };
@@ -57,8 +59,13 @@ export const checkAccountExists = async (loginId, phoneNumber) => {
   }
 
   // 🚀 실제 백엔드 연결 시
-  const response = await client.post('/auth/forgot-password/check', { loginId, phoneNumber });
-  return response.data;
+  try {
+    const response = await client.post('/auth/forgot-password/check', { loginId, phoneNumber });
+    return response.data;
+  } catch (error) {
+    console.error("계정 확인 에러:", error.response?.data || error.message);
+    return error.response?.data || { status: 400, message: "서버 통신 오류" };
+  }
 };
 /**
  * 4. 인증번호 검증 (회원가입/비번찾기 공통)
@@ -81,6 +88,7 @@ export const verifyAuthCode = async (phoneNumber, code, type) => {
     const response = await client.post('/auth/verify-number', { phoneNumber, code, type });
     return response.data;
   } catch (error) {
+    console.error("인증번호 검증 에러:", error.response?.data || error.message);
     return error.response?.data || { status: 400, message: "통신 오류" };
   }
 };
@@ -99,8 +107,13 @@ export const sendSignupAuthCode = async (phoneNumber) => {
   }
 
   // 실제 서버 연결 시 이미지 속 URL 사용
-  const response = await client.post('/auth/signup-sendnum', { phoneNumber });
-  return response.data;
+  try {
+    const response = await client.post('/auth/signup-sendnum', { phoneNumber });
+    return response.data;
+  } catch (error) {
+    console.error("인증번호 발송 에러:", error.response?.data || error.message);
+    return error.response?.data || { status: 400, message: "발송 오류" };
+  }
 };
 
 /**
@@ -118,8 +131,14 @@ export const signupUser = async (finalData) => {
   }
 
   // 실제 서버 연결 시
-  const response = await client.post('/auth/signup', finalData);
-  return response.data;
+  try {
+    const response = await client.post('/auth/signup', finalData);
+    return response.data;
+  } catch (error) {
+    console.error("회원가입 에러:", error.response?.data || error.message);
+    // 💡 아카이브 명세서의 400 에러(필드 누락 등) 대응
+    return error.response?.data || { status: 400, message: "가입 실패" };
+  }
 };
 
 /**
@@ -133,9 +152,7 @@ export const loginUser = async (loginId, password) => {
           resolve({
             status: 200,
             data: {
-              //userToken: 'mock-token-for-testing-12345', // 메인 진입용 가짜 토큰
-              //userName: '테스터',
-              //loginId: 'test'
+              
               token: {accessToken:'mock-token-12345'},
               user: {userId: 1,userName:'테스터'}
             }
@@ -149,10 +166,16 @@ export const loginUser = async (loginId, password) => {
   }
 
   // 실제 서버 연결 시
-  const response = await client.post('/auth/login', { loginId, password });
-  return response.data;
+  try {
+    const response = await client.post('/auth/login', { loginId, password });
+    return response.data;
+  } catch (error) {
+    console.error("로그인 에러:", error.response?.data || error.message);
+    return error.response?.data || { status: 401, message: "로그인 실패" };
+  }
 };
 
+//회원가입 인증 요청 통합함수
 export const requestSignupAuth = async (phoneNumber) => {
   try {
     // 1단계: 전화번호 중복 확인 (/auth/verify-phone)

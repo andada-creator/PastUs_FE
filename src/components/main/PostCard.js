@@ -5,28 +5,40 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleLikePost } from '../../api/postService';
 
-export default function PostCard({ item }) {
+export default function PostCard({ item, onPress }) {
   const router = useRouter();
 
   // 1. 좋아요 상태 및 카운트 관리 (초기값은 서버 데이터 기준)
   // 보통 서버에서 해당 게시글을 내가 눌렀는지 여부(liked)도 함께 보내줍니다.
-  const [isLiked, setIsLiked] = useState(item.liked || false); 
-  const [likeCount, setLikeCount] = useState(item.stats?.likeCount ?? item.helpfulCount ?? 0);
+  const [isLiked, setIsLiked] = useState(item.liked ); 
+  const [likeCount, setLikeCount] = useState(item.likeCount);
 
   // 2. 좋아요 토글 핸들러
   const handleLike = async () => {
-    try {
-      // API 호출: 명세서의 POST /posts/{postId}/like 실행
-      const res = await toggleLikePost(item.postId);
+  // 1. [낙관적 업데이트] 서버 응답 기다리기 전에 UI를 먼저 바꿉니다.
+  const prevLiked = isLiked;
+  const prevCount = likeCount;
 
-      // 서버 응답({liked, totalLikes})을 바탕으로 상태 확정
-      setIsLiked(res.liked);
-      setLikeCount(res.totalLikes);
-    } catch (error) {
-      console.error("좋아요 처리 실패:", error);
-      // 실패 시 사용자에게 알림을 주거나 이전 상태로 롤백하는 로직을 추가할 수 있습니다.
-    }
-  };
+  setIsLiked(!prevLiked);
+  setLikeCount(prevLiked ? prevCount - 1 : prevCount + 1);
+
+  try {
+    // 2. [서버 통신] 사용자님이 가지고 계셨던 그 코드입니다!
+    const res = await toggleLikePost(item.postId); 
+
+    // 3. [상태 확정] 서버가 준 진짜 데이터로 UI를 최종 업데이트합니다.
+    // 만약 서버 데이터 구조가 res.data 아래에 있다면 res.data.liked로 맞추세요.
+    setIsLiked(res.liked);
+    setLikeCount(res.totalLikes);
+
+  } catch (error) {
+    // 4. [에러 복구] 서버 통신 실패 시 원래 상태로 되돌립니다.
+    console.error("좋아요 실패:", error);
+    setIsLiked(prevLiked);
+    setLikeCount(prevCount);
+    Alert.alert("알림", "좋아요 처리에 실패했습니다.");
+  }
+};
 
   // 🚀 데이터 구조 방어 로직
   const authorName = item.author?.loginId || item.loginId || (item.isAnonymous ? '익명' : '작성자');
@@ -40,7 +52,14 @@ export default function PostCard({ item }) {
   return (
     <Pressable 
       style={styles.card} 
-      onPress={() => router.push(`/posts/${item.postId}`)}
+      onPress={() => {
+        // 🚀 3. 목적지 주소와 받는 쪽 변수명([postId])을 일치시킵니다.
+        if (item?.postId) {
+          router.push(`/posts/${item.postId}`); 
+        } else {
+          console.error("아이템에 postId가 없습니다!", item);
+        }
+      }}
     >
       <View style={styles.topRow}>
         <Text style={styles.authorText}>
