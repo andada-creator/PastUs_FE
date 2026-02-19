@@ -134,63 +134,143 @@ export default function MainScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff' 
+  },
+  /* 🚀 1. 헤더: 로고와 아이콘 정밀 배치 */
   header: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center', 
     paddingHorizontal: 20, 
-    paddingVertical: 15 
+    paddingVertical: 12 
   },
-  logo: { fontSize: 28, fontWeight: 'bold', fontFamily: 'serif' },
-  headerIcons: { flexDirection: 'row', alignItems: 'center' },
-  proBanner: { backgroundColor: '#2B57D0', margin: 20, padding: 20, borderRadius: 15 },
-  proTitle: { color: '#fff', fontSize: 15, fontWeight: 'bold', textAlign: 'center' },
-  proSub: { color: '#fff', fontSize: 12, textAlign: 'center', marginTop: 8 },
-  tagSection: { paddingHorizontal: 20, marginBottom: 25 },
-  tagList: { flexDirection: 'row', marginTop: 10 },
-  tagBadge: { backgroundColor: '#2B57D0', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginRight: 8 },
-  tagText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  section: { paddingHorizontal: 20, marginBottom: 25 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold' },
-  more: { fontSize: 22, color: '#999' },
-  /* 🚀 하단 탭 바 스타일 */
+  logo: { 
+    fontSize: 26, 
+    fontWeight: '700', 
+    fontFamily: 'serif', // 세리프 서체 적용
+    color: '#000'
+  },
+  headerIcons: { 
+    flexDirection: 'row', 
+    alignItems: 'center' 
+  },
+
+  /* 🚀 2. 프로 배너: 피그마 블루 컬러 적용 */
+  proBanner: { 
+    backgroundColor: '#2B57D0', 
+    marginHorizontal: 20, 
+    marginVertical: 15,
+    paddingVertical: 24, 
+    borderRadius: 12, // 시안의 둥근 모서리
+    alignItems: 'center' 
+  },
+  proTitle: { 
+    color: '#fff', 
+    fontSize: 16, 
+    fontWeight: '700' 
+  },
+  proSub: { 
+    color: 'rgba(255, 255, 255, 0.8)', 
+    fontSize: 12, 
+    marginTop: 6 
+  },
+
+  /* 🚀 3. 섹션 타이틀: 피그마 규격(18px, 600) 강제 적용 */
+  section: { 
+    paddingHorizontal: 20, 
+    marginBottom: 30 
+  },
+  sectionHeader: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: 12 
+  },
+  sectionTitle: { 
+    fontSize: 18,        // 피그마 명세
+    fontWeight: '600',    // 피그마 명세 (SemiBold)
+    lineHeight: 22,      // 피그마 명세
+    color: '#000' 
+  },
+  more: { 
+    fontSize: 20, 
+    color: '#000', 
+    fontWeight: '300' 
+  },
+
+  /* 🚀 4. 인기 태그: 가로 스크롤 및 배지 스타일 */
+  tagSection: { 
+    paddingLeft: 20, // 왼쪽 정렬 유지를 위해 패딩 분리
+    marginBottom: 30 
+  },
+  tagList: { 
+    marginTop: 10 
+  },
+  tagBadge: { 
+    backgroundColor: '#2B57D0', 
+    paddingHorizontal: 14, 
+    paddingVertical: 7, 
+    borderRadius: 20, 
+    marginRight: 8 
+  },
+  tagText: { 
+    color: '#fff', 
+    fontSize: 12, 
+    fontWeight: '700' 
+  },
+
+  /* 🚀 5. 하단 탭 바: 입체감 있는 그림자 적용 */
   bottomTab: {
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    height: 70,
+    height: 85,
     backgroundColor: '#fff',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    paddingBottom: 10
+    paddingBottom: 25,
+    // 그림자 설정 (iOS & Android)
+    borderTopWidth: 0,
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
   },
-  tabItem: { alignItems: 'center', justifyContent: 'center', width: 80 },
-  tabLabel: { fontSize: 10, marginTop: 4, fontWeight: '600' },
-  
-  /* 🚀 플러스 버튼 스타일 */
+  tabItem: { 
+    alignItems: 'center', 
+    width: 60 
+  },
+  tabLabel: { 
+    fontSize: 11, 
+    marginTop: 4, 
+    fontWeight: '500',
+    color: '#000'
+  },
+
+  /* 🚀 6. 플로팅 플러스 버튼 (FAB) */
   fabWrapper: {
-    top: -25, // 탭 바 위로 툭 튀어나오게 설정
-    alignItems: 'center',
-    justifyContent: 'center',
+    top: -20,
   },
   fab: {
-    width: 65,
-    height: 65,
-    borderRadius: 32.5,
-    backgroundColor: '#B5C7F7', // 시안의 연한 파란색
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#B5C7F7', // 시안 특유의 연블루
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8, // 안드로이드 그림자
-    shadowColor: '#000', // iOS 그림자
-    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
-    shadowRadius: 4.65,
+    shadowRadius: 5,
   },
-  fabIcon: { fontSize: 40, color: '#fff', fontWeight: '300', marginBottom: 4 }
+  fabIcon: { 
+    fontSize: 40, 
+    color: '#fff', 
+    fontWeight: '200' 
+  }
 });
-

@@ -25,22 +25,20 @@ export default function ForgotPassword() {
   const hyphenPhone = rawPhone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
 
   try {
-    // 2. 🚀 [위험 구간] 진짜 서버에 물어보기
+    // 이제 이 함수는 IS_TEST_MODE 값에 따라 알아서 가짜 혹은 진짜 데이터를 가져옵니다.
     const result = await checkAccountExists(id, hyphenPhone);
 
-    // 3. 서버 응답 처리 
-    if (result.status === "200") {
-      startTimer(); //timer함수 호출
+    // 🚀 타입 체크 주의: result.status가 숫자 200인지 확인
+    if (result.status === 200) {
+      startTimer();
       Alert.alert("발송 성공", result.message);
     } else {
-      // 400 에러 등 (아이디 없음, 번호 불일치 등)
-      Alert.alert("확인 실패", result.message || "정보를 다시 확인해주세요.");
+      // 400 에러 등이 올 경우 모달 띄우기
+      setShowAlert(true);
     }
-
   } catch (error) {
-    // 4. 🚀 [안전장치] 서버가 죽었거나 인터넷이 안 될 때 실행됨
-    console.error("통신 에러 발생:", error);
-    Alert.alert("알림", "네트워크 연결이 불안정합니다. 잠시 후 다시 시도해주세요.");
+    console.error("통신 에러:", error);
+    Alert.alert("알림", "서버와의 연결이 원활하지 않습니다.");
   }
 };
   return (

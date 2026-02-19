@@ -34,30 +34,32 @@ export const checkPhoneDuplicate = async (phoneNumber) => {
 };
 
 /**
- * 3. 계정 확인 (비밀번호 찾기용)
+ * 3. 계정 존재 여부 확인 및 인증번호 발송 (비밀번호 찾기용)
  */
 export const checkAccountExists = async (loginId, phoneNumber) => {
   if (IS_TEST_MODE) {
     return new Promise((resolve) => {
       setTimeout(() => {
-        // 테스트용: 아이디 'test', 전번 '010-1234-5678'일 때만 성공
+        // 🚀 테스트용 성공 조건: 아이디가 'test'이고 번호가 맞을 때
         if (loginId === "test" && phoneNumber.includes("1234-5678")) {
-          resolve({ status: 200, message: "계정이 확인되었습니다." });
+          resolve({ 
+            status: 200, // 숫자 타입
+            message: "계정이 확인되었습니다. 인증번호가 발송되었습니다." 
+          });
         } else {
-          resolve({ status: 400, message: "일치하는 정보가 없습니다." });
+          resolve({ 
+            status: 400, 
+            message: "일치하는 계정 정보가 없습니다." 
+          });
         }
       }, 500);
     });
   }
 
-  try {
-    const response = await client.post('/auth/find-id', { loginId, phoneNumber });
-    return response.data;
-  } catch (error) {
-    return { status: 400, message: error.response?.data?.message || "계정 없음" };
-  }
+  // 🚀 실제 백엔드 연결 시
+  const response = await client.post('/auth/forgot-password/check', { loginId, phoneNumber });
+  return response.data;
 };
-
 /**
  * 4. 인증번호 검증 (회원가입/비번찾기 공통)
  */

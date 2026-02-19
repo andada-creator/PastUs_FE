@@ -1,48 +1,113 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TextInput, StyleSheet, ActivityIndicator } from 'react-native';
-import { getAllPosts } from '../../src/api/postService';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, FlatList, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { useRouter, Stack } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { getAllPosts, searchPosts } from '../../src/api/postService';
 import PostCard from '../../src/components/main/PostCard';
 
-export default function AllPostsList() {
+export default function AllListScreen() {
+  const router = useRouter();
   const [posts, setPosts] = useState([]);
+  const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0); // 🚀 페이지 번호 (0부터 시작)
 
-  useEffect(() => {
-    const loadAllPosts = async () => {
-      try {
-        // 🚀 명세서 규격에 맞춰 page와 size(예: 20) 전달
-        const response = await getAllPosts(page, 20); 
-        if (response.status === 200) {
-          setPosts(response.data.content); // content 배열 추출
-        }
-      } finally { setLoading(false); }
-    };
-    loadAllPosts();
-  }, [page]);
+  useEffect(() => { fetchInitialData(); }, []);
+
+  const fetchInitialData = async () => {
+    const res = await getAllPosts(0, 20); // 최신순 정렬 데이터
+    if (res.status === 200) setPosts(res.data.content);
+    setLoading(false);
+  };
+
+  const handleSearch = async () => {
+    setLoading(true);
+    const isTagSearch = searchText.startsWith('#');
+    const query = isTagSearch ? searchText.slice(1) : searchText;
+
+    // 🚀 전체 DB에서 검색 (API 호출)
+    const res = await searchPosts({ 
+      tags: isTagSearch ? [query] : [], 
+      page: 0, 
+      size: 20,
+      sort: 'latest' 
+    });
+
+    if (res.items) setPosts(res.items);
+    setLoading(false);
+  };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+
       <View style={styles.searchSection}>
-        <TextInput style={styles.searchInput} placeholder="태그 검색 시 #삽입, 예) #진학" />
+        {/* 🚀 검색 바: 상단으로 밀어 올림 */}
+        <View style={styles.searchBar}>
+          <TextInput
+            style={styles.input}
+            placeholder="태그 검색 시 #삽입, 예) #진학"
+            placeholderTextColor="#C4C4C4"
+            value={searchText}
+            onChangeText={setSearchText}
+            onSubmitEditing={handleSearch}
+            maxLength={20} //
+          />
+          <Text style={styles.charCount}>{searchText.length}/20</Text>
+        </View>
+        <Text style={styles.pageTitle}>전체글</Text>
       </View>
 
-      <Text style={styles.pageTitle}>전체글</Text>
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {posts.map((item) => <PostCard key={item.postId} item={item} />)}
-      </ScrollView>
-    </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#2B57D0" style={{ flex: 1 }} />
+      ) : (
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item.postId.toString()}
+          renderItem={({ item }) => <PostCard item={item} />}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+    </SafeAreaView>
   );
 }
 
+// 공통 스타일 (인기글과 공유)
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: 20, paddingTop: 60 },
-  searchSection: { 
-    borderWidth: 1, borderColor: '#2B57D0', borderRadius: 10, 
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, marginBottom: 30 
+  container: { flex: 1, backgroundColor: '#fff' },
+  searchSection: { paddingHorizontal: 20, marginTop: 15 },
+  searchBar: { 
+    borderWidth: 1.5, 
+    borderColor: '#4A7DFF', 
+    borderRadius: 12, 
+    paddingHorizontal: 15, 
+    height: 48, 
+    // 🚀 추가: 인풋과 0/20을 가로로 배치하기 위해 필수!
+    flexDirection: 'row', 
+    alignItems: 'center' 
   },
-  searchInput: { flex: 1, paddingVertical: 12, fontSize: 14 },
-  charLimit: { fontSize: 12, color: '#2B57D0' },
-  pageTitle: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }
+  input: { 
+    flex: 1, // 🚀 추가: 인풋이 남은 공간을 다 차지하게 함
+    fontSize: 13 
+  },
+  charCount: { 
+    fontSize: 11, 
+    color: '#4A7DFF' 
+  },
+  pageTitle: { 
+    // 🚀 피그마 규격대로 수정: 18px, 600>>700으로 변경
+    fontSize: 18, 
+    fontWeight: '700', 
+    lineHeight: 22,
+    color: '#000',
+    textAlign: 'center', 
+    // 🚀 간격 수정: "너무 붙어있다"는 피드백 반영
+    marginTop: 14, 
+    marginBottom: 20 
+  },
+  listContent: { paddingHorizontal: 20, paddingBottom: 40 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyText: { textAlign: 'center', marginTop: 50, color: '#999' },
 });
