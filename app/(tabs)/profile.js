@@ -38,7 +38,9 @@ export default function ProfileScreen() {
             >
                 <Ionicons name="search-outline" size={24} color="black" />
             </Pressable>
-          <Ionicons name="menu-outline" size={30} color="black" style={{ marginLeft: 15 }} />
+            <Pressable onPress={() => router.push('/menu')} hitSlop={15}>
+                <Ionicons name="menu-outline" size={28} color="black" style={{ marginLeft: 15 }} />
+            </Pressable>
         </View>
       </View>
 

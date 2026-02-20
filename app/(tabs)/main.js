@@ -57,8 +57,8 @@ export default function MainScreen() {
           <Pressable onPress={() => router.push('/search')}>
             <Ionicons name="search-outline" size={28} color="black" />
           </Pressable>
-          <Pressable onPress={() => router.push('/menu')}>
-            <Ionicons name="menu-outline" size={32} color="black" style={{ marginLeft: 15 }} />
+          <Pressable onPress={() => router.push('/menu')} hitSlop={15}>
+            <Ionicons name="menu-outline" size={28} color="black" style={{ marginLeft: 15 }} />
           </Pressable>
         </View>
       </View>

@@ -3,6 +3,7 @@
     "name": "PastUs_FE",
     "slug": "PastUs_FE",
     "version": "1.0.0",
+    "scheme": "pastus",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -27,7 +28,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font"
     ]
   }
 }

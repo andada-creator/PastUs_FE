@@ -61,8 +61,10 @@ export default function CreatePost() {
             >
                 <Ionicons name="search-outline" size={26} color="black" />
             </Pressable>
+            <Pressable onPress={() => router.push('/menu')} hitSlop={15}>
+                <Ionicons name="menu-outline" size={28} color="black" style={{ marginLeft: 15 }} />
+            </Pressable>
           
-          <Ionicons name="menu-outline" size={30} color="black" style={{ marginLeft: 15 }} />
         </View>
       </View>
 

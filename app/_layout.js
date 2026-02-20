@@ -1,8 +1,32 @@
 //이 코드는 모든 화면을 감싸는 Root Layout입니다. 여기서 로그인 화면과 메인 화면의 연결 고리를 설정합니다.
 
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
+//  폰트 로딩을 위한 패키지 임포트
+import { useFonts, NoticiaText_700Bold } from '@expo-google-fonts/noticia-text';
+
+// 폰트가 로드될 때까지 스플래시 화면을 유지합니다.
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  //  폰트 로드 및 별칭 설정
+  const [fontsLoaded, error] = useFonts({
+    'NoticiaText-Bold': NoticiaText_700Bold,
+  });
+
+  useEffect(() => {
+    // 폰트 로드가 완료되었거나 에러가 발생하면 스플래시 화면을 숨깁니다.
+    if (fontsLoaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, error]);
+
+  // 폰트가 로드되지 않았다면 아무것도 렌더링하지 않습니다.
+  if (!fontsLoaded && !error) {
+    return null;
+  }
+
   return (
     // Stack은 화면을 층층이 쌓는 방식의 네비게이션입니다.
     <Stack

@@ -92,7 +92,9 @@ export const getPostDetail = async (postId) => {
           status: 200,
           data: {
             postId: postId,
+            isAuthor: true,
             isAnonymous: true,
+            trustScore: 85,
             title: "팀플 무임승차 대처",
             situation: "졸업 작품 프로젝트 중 팀원 한 명이 연락이 두절되었습니다.",
             action: "데드라인을 다시 명확히 지정했습니다.",
@@ -214,6 +216,45 @@ export const toggleLikePost = async (postId, currentLikedStatus) => {
     return response.data;
   } catch (error) {
     console.error("좋아요 처리 실패:", error.message);
+    throw error;
+  }
+};
+
+/**
+ * 게시글 삭제 API (DELETE /posts/{postId})
+ *
+ */
+export const deletePost = async (postId) => {
+  if (IS_TEST_MODE) {
+    return new Promise((resolve, reject) => {
+      console.log(`[TEST] 게시글 삭제 요청 (ID: ${postId})`);
+      
+      // 실제 네트워크 지연을 시뮬레이션하기 위해 0.8초 대기
+      setTimeout(() => {
+        /**
+         * 💡 테스트하고 싶은 시나리오의 주석을 해제하세요!
+         */
+        
+        // 1. 삭제 성공 (204 No Content)
+        resolve({ status: 204 }); 
+
+        // 2. 인증 오류 (401)
+        // reject({ response: { status: 401, data: { message: "인증이 필요합니다." } } });
+
+        // 3. 권한 부족 (403)
+        // reject({ response: { status: 403, data: { message: "작성자만 삭제할 수 있습니다." } } });
+
+        // 4. 게시글 없음 (404)
+        // reject({ response: { status: 404, data: { message: "존재하지 않는 게시글입니다." } } });
+      }, 800);
+    });
+  }
+
+  // 🚀 실제 서버 통신 로직 (IS_TEST_MODE === false 일 때 실행)
+  try {
+    const response = await api.delete(`/posts/${postId}`);
+    return response;
+  } catch (error) {
     throw error;
   }
 };
