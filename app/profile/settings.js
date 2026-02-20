@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Image, ActivityIndicator, Modal, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker'; 
 import { getAccountDetail, updateAccountInfo } from '../../src/api/userService';
 
 export default function AccountSettingsScreen() {
+  const router = useRouter();
   const [userInfo, setUserInfo] = useState(null); // 사용자 정보 저장
   const [loading, setLoading] = useState(true);   // 로딩 상태 관리
 
@@ -89,7 +90,13 @@ export default function AccountSettingsScreen() {
       <View style={styles.header}>
         <Text style={styles.logo}>PastUs</Text>
         <View style={styles.headerIcons}>
-          <Ionicons name="search-outline" size={24} color="black" />
+            <Pressable 
+                onPress={() => router.push('/search')}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10}}
+            >
+                <Ionicons name="search-outline" size={24} color="black" />
+            </Pressable>
+          
           <Ionicons name="menu-outline" size={28} color="black" style={{ marginLeft: 15 }} />
         </View>
       </View>
@@ -246,6 +253,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F6F8FD', // 🚀 배경색 #F6F8FD 고정
     paddingHorizontal: 20, 
     paddingBottom: 60 
+  },
+  headerIcons: { 
+    flexDirection: 'row', // 가로로 나열
+    alignItems: 'center'   // 아이콘 높이 중앙 정렬
   },
 
   /* [2. 타이포그래피 정밀 매칭] */

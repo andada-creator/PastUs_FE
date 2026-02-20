@@ -151,22 +151,44 @@ export const searchPosts = async (searchParams) => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          status: 200,
+          // 🚀 1. 명세서()와 동일한 응답 구조
           items: [
-            { postId: 101, title: "검색 결과 테스트", viewCount: 123, helpfulCount: 9, createdAt: "2026-01-29T12:00:00Z" }
+            { 
+              postId: 101, 
+              title: "검색 결과 테스트", 
+              preview: "요약 내용입니다...", 
+              viewCount: 123, 
+              likeCount: 9, // 🚀 도움수 대신 좋아요수로 변경
+              createdAt: "2026-01-29T12:00:00Z" 
+            }
           ],
-          pageInfo: { currentPage: page, hasNext: false, totalElements: 1 }
+          page: page,
+          size: size,
+          totalElements: 1,
+          totalPages: 1
         });
       }, 500);
     });
   }
 
   try {
-    const response = await client.get('/posts/search', { params: { tags, page, size, sort } });
-    return response.data;
+    // 🚀 2. 태그 배열을 'tags=1&tags=4' 형태로 수동 직렬화
+    const tagQuery = tags.map(id => `tags=${id}`).join('&');
+    
+    // 🚀 3. URL 조립 (baseURL에 /api가 포함되어 있으므로 /posts/search 사용)
+    let url = `/posts/search?page=${page}&size=${size}&sort=${sort}`;
+    if (tagQuery) {
+      url += `&${tagQuery}`;
+    }
+
+    const response = await client.get(url); //
+    
+    // 🚀 4. 명세서 규격에 따른 response.data 반환
+    return response.data; 
   } catch (error) {
     console.error("검색 실패:", error.message);
-    return { status: 500, items: [] };
+    // 에러 시에도 search.js가 뻗지 않도록 기본 items 배열 구조 리턴
+    return { items: [], totalElements: 0 }; 
   }
 };
 

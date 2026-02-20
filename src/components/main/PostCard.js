@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleLikePost } from '../../api/postService';
 
-export default function PostCard({ item, onPress }) {
+export default function PostCard({ item, isSearch = false }) {
   const router = useRouter();
 
   // 1. 좋아요 상태 및 카운트 관리 (초기값은 서버 데이터 기준)
@@ -51,7 +51,7 @@ export default function PostCard({ item, onPress }) {
 
   return (
     <Pressable 
-      style={styles.card} 
+      style={[styles.card, isSearch && styles.searchCard]} 
       onPress={() => {
         // 🚀 3. 목적지 주소와 받는 쪽 변수명([postId])을 일치시킵니다.
         if (item?.postId) {

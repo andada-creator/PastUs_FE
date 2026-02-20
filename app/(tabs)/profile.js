@@ -32,7 +32,12 @@ export default function ProfileScreen() {
       <View style={styles.header}>
         <Text style={styles.logo}>PastUs</Text>
         <View style={styles.headerIcons}>
-          <Ionicons name="search-outline" size={24} color="black" />
+            <Pressable 
+            onPress={() => router.push('/search')}
+            style={styles.searchBtn}
+            >
+                <Ionicons name="search-outline" size={24} color="black" />
+            </Pressable>
           <Ionicons name="menu-outline" size={30} color="black" style={{ marginLeft: 15 }} />
         </View>
       </View>

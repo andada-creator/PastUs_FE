@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 const client = axios.create({
-  baseURL: 'http://백엔드주소/api/v1', //
+  baseURL: 'http://백엔드주소/api', //
   headers: {
     'Content-Type': 'application/json',
   },

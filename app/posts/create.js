@@ -55,7 +55,13 @@ export default function CreatePost() {
       <View style={styles.header}>
         <Text style={styles.logo}>PastUs</Text>
         <View style={styles.headerIcons}>
-          <Ionicons name="search-outline" size={26} color="black" />
+            <Pressable
+                onPress={() => router.push('/search')}
+                style={styles.searchBtn}
+            >
+                <Ionicons name="search-outline" size={26} color="black" />
+            </Pressable>
+          
           <Ionicons name="menu-outline" size={30} color="black" style={{ marginLeft: 15 }} />
         </View>
       </View>
@@ -116,7 +122,7 @@ export default function CreatePost() {
 const styles = StyleSheet.create({
   // 🚀 최상단 영역 화이트 처리
   container: { flex: 1, backgroundColor: '#fff' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 10, backgroundColor: '#fff' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical:10, backgroundColor: '#fff' },
   logo: { fontSize: 28, fontWeight: 'bold', fontFamily: 'serif' },
   headerIcons: { flexDirection: 'row', alignItems: 'center' },
   

@@ -88,8 +88,11 @@ export default function MainScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>이번 주 인기글 Top 10</Text>
-            <Pressable onPress={() => router.push('/posts/popular-list')}>
-              <Text style={styles.more}>〉</Text>
+            <Pressable 
+              onPress={() => router.push('/posts/popular-list')}
+              hitSlop={{ top:20, bottom: 20, left: 20, right: 20}}
+              >
+              <Ionicons name="chevron-forward" size={20} color="#000" />
             </Pressable>
           </View>
           {popularPosts.map(post => <PostCard key={post.postId} item={post} />)}
@@ -99,8 +102,11 @@ export default function MainScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>전체글 보기</Text>
-            <Pressable onPress={() => router.push('/posts/all-list')}>
-              <Text style={styles.more}>〉</Text>
+            <Pressable 
+              onPress={() => router.push('/posts/all-list')}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            >
+              <Ionicons name="chevron-forward" size={20} color="#000" />
             </Pressable>
           </View>
           {recentPosts.map(post => <PostCard key={post.postId} item={post} />)}
