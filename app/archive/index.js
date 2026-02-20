@@ -98,6 +98,7 @@ export default function ArchiveScreen() {
             placeholderTextColor="#C4C4C4"
             value={searchText}
             onChangeText={setSearchText}
+            maxLength={20}
           />
           <Text style={styles.charCount}>{searchText.length}/20</Text>
         </View>
@@ -162,9 +163,9 @@ export default function ArchiveScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   searchSection: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12 },
-  searchBar: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#4A7DFF', borderRadius: 12, paddingHorizontal: 15, height: 48 },
-  input: { flex: 1, fontSize: 13 },
-  charCount: { fontSize: 11, color: '#4A7DFF' },
+  searchBar: { position: 'relative',flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: '#4A7DFF', borderRadius: 12, paddingHorizontal: 15, height: 55 },
+  input: { flex: 1, fontSize: 13, paddingRight: 40, paddingBottom: 10, },
+  charCount: { position: 'absolute', right: 12, bottom: 6,fontSize: 10, color: '#4A7DFF' },
 
   controlRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: '#eee' },
   tabs: { flexDirection: 'row', gap: 20 },

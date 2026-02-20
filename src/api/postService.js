@@ -92,7 +92,7 @@ export const getPostDetail = async (postId) => {
           status: 200,
           data: {
             postId: postId,
-            isAuthor: true,
+            isAuthor: false,
             isAnonymous: true,
             trustScore: 85,
             title: "팀플 무임승차 대처",
@@ -255,6 +255,47 @@ export const deletePost = async (postId) => {
     const response = await api.delete(`/posts/${postId}`);
     return response;
   } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * 게시글 태그 조회 (/posts/{postId}/tags)
+ */
+export const getPostTags = async (postId) => {
+  // 테스트 모드일 때 가짜 데이터 반환
+  if (IS_TEST_MODE) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          status: 200,
+          data: [
+            { tagId: 1, name: "팀플/과제" },
+            { tagId: 2, name: "대처법" }
+          ]
+        });
+      }, 300);
+    });
+  }
+
+  try {
+    const response = await client.get(`/posts/${postId}/tags`);
+    return response;
+  } catch (error) {
+    console.error("태그 조회 실패:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+/**
+ * 게시글 태그 수정 (/posts/{postId}/tags)
+ */
+export const updatePostTags = async (postId, data) => {
+  try {
+    const response = await client.put(`/posts/${postId}/tags`, data);
+    return response;
+  } catch (error) {
+    console.error("태그 수정 실패:", error.response?.data || error.message);
     throw error;
   }
 };

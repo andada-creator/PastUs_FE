@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   logo: { 
     fontSize: 26, 
     fontWeight: '700', 
-    fontFamily: 'serif', // 세리프 서체 적용
+    fontFamily: 'NoticiaText-Bold',
     color: '#000'
   },
   headerIcons: { 

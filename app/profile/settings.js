@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   /* [1. 전체 레이아웃 및 배경] */
   container: { flex: 1, backgroundColor: '#fff' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, backgroundColor: '#fff' },
-  logo: { fontSize: 26, fontWeight: 'bold', fontFamily: 'serif' },
+  logo: { fontSize: 26, fontWeight: 'bold', fontFamily: 'NoticiaText-Bold', },
   scrollContent: { 
     backgroundColor: '#F6F8FD', // 🚀 배경색 #F6F8FD 고정
     paddingHorizontal: 20, 

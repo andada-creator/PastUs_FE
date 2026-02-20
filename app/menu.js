@@ -8,9 +8,11 @@ export default function MenuScreen() {
   const router = useRouter();
 
   // 메뉴 클릭 이벤트 핸들러
-  const navigateTo = (path) => {
-    if (path) router.push(path);
-  };
+  // 내비게이션 함수 예시
+    const navigateTo = (path) => {
+        console.log("📍 이동 시도:", path); 
+        router.replace(path);
+    };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -56,7 +58,7 @@ export default function MenuScreen() {
   );
 }
 
-// 🚀 재사용 가능한 메뉴 아이템 컴포넌트
+//  재사용 가능한 메뉴 아이템 컴포넌트
 const MenuItem = ({ label, onPress }) => (
   <Pressable style={styles.menuItem} onPress={onPress}>
     <Text style={styles.menuItemText}>{label}</Text>
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
   section: { marginBottom: 35 },
   sectionHeader: { marginBottom: 15 },
   sectionTitle: { fontSize: 13, color: '#A0A0A0', fontWeight: '600', marginBottom: 8 },
-  divider: { height: 1, backgroundColor: '#333', width: '100%' }, // 시안의 진한 구분선
+  divider: { height: 1, backgroundColor: '#333', width: '100%' }, 
 
   menuItem: { paddingVertical: 12 },
   menuItemText: { fontSize: 18, fontWeight: '700', color: '#000' }

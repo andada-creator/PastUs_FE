@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#fff'
   },
-  logo: { fontSize: 26, fontWeight: 'bold', fontFamily: 'serif' }, // Serif 계열 폰트 적용
+  logo: { fontSize: 26, fontWeight: 'bold', fontFamily: 'NoticiaText-Bold',}, // Serif 계열 폰트 적용
   headerIcons: { flexDirection: 'row', alignItems: 'center' },
   
   // 🚀 전체 배경색 적용

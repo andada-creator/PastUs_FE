@@ -25,7 +25,7 @@ export const styles = StyleSheet.create({
   },
 
   // --- [2. 공통 요소: 제목 및 입력창] ---
-  title: { fontSize: 60, fontWeight: 'bold', textAlign: 'center', marginBottom: 60, fontFamily: 'serif' },
+  title: { fontSize: 60, fontWeight: 'bold', textAlign: 'center', marginBottom: 60, fontFamily: 'NoticiaText-Bold', },
   inputGroup: { marginBottom: 20 },
   label: { color: '#4A7DFF', fontSize: 14, fontWeight: '600', marginBottom: 8 },
   input: { borderWidth: 1, borderColor: '#4A7DFF', borderRadius: 10, padding: 15, fontSize: 16 },

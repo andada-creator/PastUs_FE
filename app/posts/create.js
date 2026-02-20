@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   // 🚀 최상단 영역 화이트 처리
   container: { flex: 1, backgroundColor: '#fff' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical:10, backgroundColor: '#fff' },
-  logo: { fontSize: 28, fontWeight: 'bold', fontFamily: 'serif' },
+  logo: { fontSize: 28, fontWeight: 'bold', fontFamily: 'NoticiaText-Bold', },
   headerIcons: { flexDirection: 'row', alignItems: 'center' },
   
   // 🚀 본문 배경 하늘색 처리

@@ -1,104 +1,68 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Pressable, Alert, TextInput } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Pressable, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router'; 
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { Ionicons } from '@expo/vector-icons';
-import { getPostDetail, updatePost, deletePost, getPostTags, updatePostTags } from '../../src/api/postService'; 
-import TagSelectModal from '../../src/components/modals/TagSelectModal';
+import { getPostDetail, getPostTags, deletePost } from '../../src/api/postService'; 
 
-export default function EditPost() {
+export default function PostDetail() {
   const { postId } = useLocalSearchParams();
   const router = useRouter();
   
   const [loading, setLoading] = useState(true);
-  const [isTagModalVisible, setIsTagModalVisible] = useState(false);
-  
-  // 🚀 1. 수정할 데이터를 담을 상태(State) 정의
-  const [form, setForm] = useState({
-    title: '',
-    situation: '',
-    action: '',
-    retrospective: '',
-    isAnonymous: false,
-    useToken: false,
-  });
+  const [post, setPost] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [isAuthor, setIsAuthor] = useState(false); // 🚀 내 글 여부 확인용
 
   useEffect(() => {
-    const initData = async () => {
-      try {
-        setLoading(true);
-        // 게시글 본문 및 태그 정보 병렬 로드
-        const [postRes, tagRes] = await Promise.all([
-          getPostDetail(postId),
-          getPostTags(postId)
-        ]);
-
-        if (postRes.data) {
-          setForm({
-            title: postRes.data.title,
-            situation: postRes.data.situation,
-            action: postRes.data.action,
-            retrospective: postRes.data.retrospective,
-            isAnonymous: postRes.data.isAnonymous,
-            useToken: postRes.data.useToken,
-          });
-        }
-        if (tagRes.data) setSelectedTags(tagRes.data);
-      } catch (error) {
-        Alert.alert("알림", "데이터를 불러오지 못했습니다.");
-        router.back();
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (postId) initData();
-  }, [postId]);
-
-  // 🚀 2. 수정 완료 처리 (본문 + 태그)
-  const handleUpdate = async () => {
+  const initData = async () => {
     try {
-      await updatePost(postId, form);
-      await updatePostTags(postId, { tagIds: selectedTags.map(t => t.tagId) });
-      Alert.alert("성공", "수정이 완료되었습니다.", [{ text: "확인", onPress: () => router.back() }]);
-    } catch (e) {
-      Alert.alert("오류", "수정 중 문제가 발생했습니다.");
+      setLoading(true);
+      const [postRes, tagRes] = await Promise.all([
+        getPostDetail(postId),
+        getPostTags(postId).catch(() => ({ data: [] })) // 태그 실패 시 빈 배열 처리
+      ]);
+
+      if (postRes.data) {
+        setPost(postRes.data);
+        setIsAuthor(postRes.data.isAuthor || false);
+      }
+      
+      
+      if (tagRes.data) {
+        setSelectedTags(tagRes.data); 
+      }
+    } catch (error) {
+      console.error("❌ 상세 로드 에러:", error);
+      Alert.alert("알림", "데이터를 불러오지 못했습니다.");
+      router.back();
+    } finally {
+      setLoading(false);
     }
   };
+  if (postId) initData();
+}, [postId]);
 
-  // --- [삭제 확인 팝업 및 로직] ---
+  // 삭제 로직 (작성자 전용)
   const handleDelete = () => {
-    Alert.alert(
-      "게시글 삭제", 
-      "정말 이 글을 삭제하시겠습니까?\n삭제된 글은 복구할 수 없습니다.", 
-      [
-        { text: "취소", style: "cancel" },
-        { 
-          text: "삭제", 
-          style: "destructive", 
-          onPress: async () => {
-            try {
-              const res = await deletePost(postId); // 🚀 실제 서버 삭제 요청
-              
-              if (res.status === 204) { // 🚀 204 No Content: 삭제 성공
-                Alert.alert("완료", "게시글이 삭제되었습니다.");
-                router.replace('/main'); // 삭제 후 메인 화면으로 이동
-              }
-            } catch (error) {
-              // 🚀 명세서 기반 에러 대응
-              const status = error.response?.status;
-              if (status === 401) Alert.alert("오류", "인증이 필요합니다.");
-              else if (status === 403) Alert.alert("오류", "작성자만 삭제할 수 있습니다.");
-              else if (status === 404) Alert.alert("오류", "존재하지 않는 게시글입니다.");
-              else Alert.alert("오류", "서버 오류가 발생했습니다.");
-            }
-          }
-        }
-      ]
-    );
+    Alert.alert("게시글 삭제", "정말 삭제하시겠습니까?", [
+      { text: "취소", style: "cancel" },
+      { text: "삭제", style: "destructive", onPress: async () => {
+          try {
+            await deletePost(postId);
+            Alert.alert("완료", "삭제되었습니다.");
+            router.replace('/main');
+          } catch (e) { Alert.alert("오류", "삭제에 실패했습니다."); }
+      }}
+    ]);
   };
 
   if (loading) return <ActivityIndicator size="large" color="#2B57D0" style={{ flex: 1 }} />;
+  if (!post) return null;
+
+  // 작성자 이름 처리: 익명 여부에 따라 결정
+  const authorName = post.isAnonymous ? "익명" : (post.loginId || post.authorId || "사용자");
+  const dateStr = (post.createdAt || "2026.01.30").split('T')[0].replace(/-/g, '.');
 
   return (
     <View style={styles.outerContainer}>
@@ -106,110 +70,140 @@ export default function EditPost() {
       <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
         <Stack.Screen options={{ headerShown: false }} />
 
-        {/* 상단 헤더 */}
+        {/* 상단 헤더: PastUs 로고 및 메뉴 */}
         <View style={styles.header}>
           <Text style={styles.logo}>PastUs</Text>
           <View style={styles.headerIcons}>
-            <Ionicons name="search-outline" size={26} color="black" />
+            <Ionicons name="search-outline" size={24} color="black" />
             <Pressable onPress={() => router.push('/menu')}>
-              <Ionicons name="menu-outline" size={30} color="black" style={{ marginLeft: 15 }} />
+              <Ionicons name="menu-outline" size={28} color="black" style={{ marginLeft: 15 }} />
             </Pressable>
           </View>
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* 🚀 옵션 바: 익명 체크, 토큰, 수정, 삭제 */}
-          <View style={styles.optionRow}>
-            <View style={styles.anonGroup}>
-              <Text style={styles.label}>익명</Text>
-              <Pressable onPress={() => setForm({...form, isAnonymous: !form.isAnonymous})}>
-                <Ionicons name={form.isAnonymous ? "checkbox" : "square-outline"} size={22} color="#2B57D0" style={{marginLeft: 5}} />
-              </Pressable>
-            </View>
-            <View style={styles.btnGroup}>
-              <View style={styles.tokenBadge}><Text style={styles.tokenText}>토큰사용</Text></View>
-              <Pressable style={styles.blueBtn} onPress={handleUpdate}><Text style={styles.btnText}>수정</Text></Pressable>
-              <Pressable style={styles.blueBtn} onPress={handleDelete}>
-                <Text style={styles.btnText}>삭제</Text>
+          <Text style={styles.dateText}>{dateStr}</Text>
+          <Text style={styles.mainTitle}>{post.title}</Text>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.authorLabel}>작성자: <Text style={styles.authorValue}>{authorName}</Text></Text>
+            <View style={styles.statsRow}>
+              <Ionicons name="heart-outline" size={16} color="#888" />
+              <Text style={styles.statsValue}>{post.likeCount || 0}</Text>
+              <Ionicons name="eye-outline" size={16} color="#888" style={{ marginLeft: 8 }} />
+              <Text style={styles.statsValue}>{post.viewCount || 0}</Text>
+              <Pressable onPress={() => Alert.alert("알림", "신고 접수되었습니다.")}>
+                <Text style={styles.reportBtn}>신고</Text>
               </Pressable>
             </View>
           </View>
+
+          {/* 태그 및 작성자 아래 구분선 (시안 반영) */}
+          <View style={styles.mainDivider} />
 
           {/* 태그 영역 */}
-          <View style={styles.tagSection}>
-            <Text style={styles.fieldLabel}>태그</Text>
-            <View style={styles.tagRow}>
-              {selectedTags.map((tag) => (
-                <View key={tag.tagId} style={styles.tagBadge}><Text style={styles.tagText}>#{tag.name} ×</Text></View>
-              ))}
-              <Pressable onPress={() => setIsTagModalVisible(true)}>
-                <Ionicons name="add-circle" size={32} color="#2B57D0" />
-              </Pressable>
-            </View>
+          <View style={styles.tagContainer}>
+            {selectedTags.map((tag, i) => ( // tags 대신 selectedTags 사용
+              <View key={i} style={styles.tagBadge}>
+                <Text style={styles.tagText}>#{tag.name || tag.replace('#', '')}</Text>
+              </View>
+            ))}
           </View>
 
-          {/* 🚀 입력 섹션들 (TextInput으로 교체) */}
-          <InputBox label="제목" value={form.title} onChange={(v) => setForm({...form, title: v})} limit={30} />
-          <InputBox label="상황명시" value={form.situation} onChange={(v) => setForm({...form, situation: v})} limit={300} multiline />
-          <InputBox label="구체적 행동 서술" value={form.action} onChange={(v) => setForm({...form, action: v})} limit={300} multiline />
-          <InputBox label="회고" value={form.retrospective} onChange={(v) => setForm({...form, retrospective: v})} limit={300} multiline />
-        </ScrollView>
-      </SafeAreaView>
+          {/* 본문 섹션 (디자인 시안 스타일 적용) */}
+          <DetailSection label="상황명시" content={post.situation} />
+          <DetailSection label="구체적 행동 서술" content={post.action} />
+          <DetailSection label="회고" content={post.retrospective} />
 
-      <TagSelectModal 
-        visible={isTagModalVisible} 
-        onClose={() => setIsTagModalVisible(false)}
-        initialSelectedIds={selectedTags.map(t => t.tagId)}
-        onApply={(newIds) => { /* 태그 ID 기반 업데이트 로직 */ setIsTagModalVisible(false); }}
-      />
+          {/* 작성자 옵션: 내 글일 때만 토큰사용, 수정, 삭제 노출 */}
+          <View style={styles.bottomActionRow}>
+            <View style={styles.flexOne}>
+              {/* 내 글이 아닐 때만 토큰 사용 버튼 숨김 */}
+              {isAuthor && (
+                <View style={styles.tokenBadge}>
+                  <Text style={styles.tokenText}>토큰사용</Text>
+                </View>
+              )}
+            </View>
+            
+            {isAuthor && (
+              <View style={styles.editBtnGroup}>
+                <Pressable style={styles.actionBtn} onPress={() => router.push(`/posts/edit/${postId}`)}>
+                  <Text style={styles.actionBtnText}>수정</Text>
+                </Pressable>
+                <Pressable style={styles.actionBtn} onPress={handleDelete}>
+                  <Text style={styles.actionBtnText}>삭제</Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+
+        {/* 시안 하단 내비게이션 바 */}
+        <View style={styles.bottomNav}>
+          <Pressable onPress={() => router.push('/main')} style={styles.navItem}>
+            <Ionicons name="home" size={24} color="black" />
+            <Text style={styles.navText}>홈</Text>
+          </Pressable>
+          <Pressable style={styles.plusBtn}>
+            <Ionicons name="add" size={32} color="white" />
+          </Pressable>
+          <Pressable onPress={() => router.push('/mypage')} style={styles.navItem}>
+            <Ionicons name="person" size={24} color="black" />
+            <Text style={styles.navText}>마이페이지</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
     </View>
   );
 }
 
-// 🚀 재사용 가능한 입력 필드 컴포넌트
-const InputBox = ({ label, value, onChange, limit, multiline }) => (
-  <View style={styles.inputSection}>
-    <Text style={styles.fieldLabel}>{label}</Text>
-    <View style={styles.inputContainer}>
-      <TextInput 
-        style={[styles.input, multiline && { height: 120, textAlignVertical: 'top' }]}
-        value={value}
-        onChangeText={onChange}
-        maxLength={limit}
-        multiline={multiline}
-        placeholder={`${label} 내용을 입력하세요.`}
-      />
-      <Text style={styles.counter}>{value?.length || 0}/{limit}</Text>
+// 본문 박스 컴포넌트 (디자인 시안 기준)
+const DetailSection = ({ label, content }) => (
+  <View style={styles.sectionWrapper}>
+    <Text style={styles.sectionLabel}>{label}</Text>
+    <View style={styles.sectionBox}>
+      <Text style={styles.sectionContent}>{content}</Text>
     </View>
   </View>
 );
 
 const styles = StyleSheet.create({
-  outerContainer: { flex: 1, backgroundColor: '#F2F6FF' },
+  outerContainer: { flex: 1, backgroundColor: '#fff' },
   statusBarBg: { backgroundColor: '#fff' },
   container: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, backgroundColor: '#fff' },
-  logo: { fontSize: 28, fontWeight: 'bold', fontFamily: 'NoticiaText-Bold', },
+
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+  logo: { fontSize: 26, fontWeight: 'bold', fontFamily: 'NoticiaText-Bold' },
   headerIcons: { flexDirection: 'row', alignItems: 'center' },
-  scrollContent: { padding: 20, paddingBottom: 50 },
+  scrollContent: { padding: 20, paddingBottom: 100 },
+  dateText: { fontSize: 11, color: '#888', textAlign: 'right', marginBottom: 4 },
+  mainTitle: { fontSize: 20, fontWeight: 'bold', color: '#000', marginBottom: 12 },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  authorLabel: { fontSize: 13, color: '#444' },
+  authorValue: { fontWeight: '600' },
+  statsRow: { flexDirection: 'row', alignItems: 'center' },
+  statsValue: { fontSize: 13, color: '#888', marginLeft: 4 },
+  reportBtn: { fontSize: 12, color: '#FF4D4D', marginLeft: 10, fontWeight: 'bold' },
+  mainDivider: { height: 1.5, backgroundColor: '#333', marginBottom: 15 }, // 🚀 시안의 굵은 구분선
+  tagContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 20 },
+  tagBadge: { backgroundColor: '#2B57D0', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 15 },
+  tagText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
 
-  optionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  anonGroup: { flexDirection: 'row', alignItems: 'center' },
-  label: { fontSize: 14, fontWeight: '700' },
-  btnGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  tokenBadge: { borderWidth: 1.5, borderColor: '#2B57D0', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  sectionWrapper: { marginBottom: 18 },
+  sectionLabel: { fontSize: 15, fontWeight: 'bold', marginBottom: 8 },
+  sectionBox: { backgroundColor: '#F8FAFF', borderWidth: 1, borderColor: '#2B57D0', borderRadius: 10, padding: 15, minHeight: 80 },
+  sectionContent: { fontSize: 14, color: '#333', lineHeight: 20 },
+  bottomActionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+  flexOne: { flex: 1 },
+
+  tokenBadge: { alignSelf: 'flex-start', borderWidth: 1.5, borderColor: '#2B57D0', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   tokenText: { fontSize: 11, color: '#2B57D0', fontWeight: 'bold' },
-  blueBtn: { backgroundColor: '#2B57D0', paddingHorizontal: 15, paddingVertical: 6, borderRadius: 20 },
-  btnText: { color: '#fff', fontSize: 13, fontWeight: 'bold' },
-
-  tagSection: { marginBottom: 20 },
-  fieldLabel: { fontSize: 15, fontWeight: '700', marginBottom: 10 },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
-  tagBadge: { backgroundColor: '#2B57D0', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-  tagText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-
-  inputSection: { marginBottom: 20 },
-  inputContainer: { position: 'relative' },
-  input: { backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#2B57D0', borderRadius: 12, padding: 15, fontSize: 14 },
-  counter: { position: 'absolute', right: 12, bottom: 8, fontSize: 10, color: '#2B57D0', fontWeight: 'bold' }
+  editBtnGroup: { flexDirection: 'row', gap: 8 },
+  actionBtn: { backgroundColor: '#2B57D0', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20 },
+  actionBtnText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
+  bottomNav: { position: 'absolute', bottom: 0, width: '100%', height: 70, backgroundColor: '#fff', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#EEE' },
+  navItem: { alignItems: 'center' },
+  navText: { fontSize: 10, marginTop: 4 },
+  plusBtn: { width: 50, height: 50, backgroundColor: '#ADC4FF', borderRadius: 25, justifyContent: 'center', alignItems: 'center', marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3 }
 });
