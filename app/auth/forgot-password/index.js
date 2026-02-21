@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Modal, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { formatPhone } from '../../../src/utils/signupUtils'; // 🚀 유틸리티 가져오기
 import { styles } from '../../../src/styles/authStyles'; // 🚀 통일된 스타일 사용
 import { checkAccountExists } from '../../../src/api/authService';
@@ -44,6 +44,7 @@ export default function ForgotPassword() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.step2Container}>
+        <Stack.Screen options={{ headerShown: false }} />
         <Text style={styles.title}>PastUs</Text>
 
         {/* 아이디 입력창 */}

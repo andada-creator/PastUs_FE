@@ -1,7 +1,7 @@
 import client from './client';
 
 // 🚀 테스트 모드 플래그 (서버 연결 시 false로 변경)
-const IS_TEST_MODE = true; 
+const IS_TEST_MODE = false; 
 
 /**
  * 아카이브 목록 조회 API
@@ -68,7 +68,7 @@ export const getArchivePosts = async (filter = 'MY_POST', sort = 'latest', page 
         size: 20 
       }
     });
-    
+    console.log("아카이브 서버 응답:",response.data);
     // 성공 시 데이터 반환
     return response.data; 
 

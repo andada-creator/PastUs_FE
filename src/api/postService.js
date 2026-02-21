@@ -1,6 +1,6 @@
 import client from './client'; // 🚀 우리가 만든 axios 인스턴스 사용
 
-const IS_TEST_MODE = true; 
+const IS_TEST_MODE = false; 
 
 // 1. 전체 글 목록 조회 (/posts)
 export const getAllPosts = async (page = 0, size = 3) => {
@@ -112,7 +112,7 @@ export const getPostDetail = async (postId) => {
   }
 
   try {
-    const response = await client.get(`/posts/${postId}`);
+    const response = await client.get(`/api/posts/${id}`);
     return response;
   } catch (error) {
     console.error("글 상세 조회 실패:", error.response?.data || error.message);
@@ -134,7 +134,7 @@ export const createPost = async (postData) => {
   }
 
   try {
-    const response = await client.post('/posts', postData);
+    const response = await client.post('/api/posts', postData);
     return response.data;
   } catch (error) {
     console.error("글 작성 실패:", error.response?.data || error.message);
@@ -195,6 +195,21 @@ export const searchPosts = async (searchParams) => {
 };
 
 /**
+ * 게시글 조회수 기록 API
+ * 상세 페이지 진입 시 호출
+ */
+export const recordPostView = async (postId) => {
+  try {
+    // client.js의 baseURL이 /api 까지라면 주소는 아래와 같습니다.
+    const response = await client.post(`/api/posts/${postId}/views`);
+    return response.data; // { viewCount: 123 } 같은 응답이 올 겁니다.
+  } catch (error) {
+    // 조회수 기록 실패는 사용자에게 알릴 필요까지는 없으므로 로그만 찍습니다.
+    console.error("조회수 기록 실패:", error.response?.data || error.message);
+  }
+};
+
+/**
  * 7. 게시글 좋아요 토글
  */
 export const toggleLikePost = async (postId, currentLikedStatus) => {
@@ -212,7 +227,7 @@ export const toggleLikePost = async (postId, currentLikedStatus) => {
   }
 
   try {
-    const response = await client.post(`/posts/${postId}/like`);
+    const response = await client.post(`/api/posts/${postId}/likes`);
     return response.data;
   } catch (error) {
     console.error("좋아요 처리 실패:", error.message);
@@ -252,7 +267,7 @@ export const deletePost = async (postId) => {
 
   // 🚀 실제 서버 통신 로직 (IS_TEST_MODE === false 일 때 실행)
   try {
-    const response = await api.delete(`/posts/${postId}`);
+    const response = await api.delete(`/api/posts/${id}`);
     return response;
   } catch (error) {
     throw error;

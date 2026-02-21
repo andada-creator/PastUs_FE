@@ -1,5 +1,5 @@
 // src/api/notificationService.js
-const IS_TEST_MODE = true; // 🚀 나중에 실제 백엔드 연결 시 false로만 바꾸면 끝!
+const IS_TEST_MODE = false; // 🚀 나중에 실제 백엔드 연결 시 false로만 바꾸면 끝!
 
 /**
  * 알림 상세 조회 (/notifications/{id})

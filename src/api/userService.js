@@ -1,6 +1,6 @@
 import client from './client';
 
-const IS_TEST_MODE = true; // 🚀 실제 서버 연결 시 false로 변경
+const IS_TEST_MODE = false; // 🚀 실제 서버 연결 시 false로 변경
 
 /**
  * 1. 내 프로필 정보 조회 (/users/me/dashboard)
@@ -106,5 +106,17 @@ export const updateAccountInfo = async (updateData) => {
     console.error("계정 정보 수정 실패:", error.response?.data || error.message);
     // 💡 400 에러 등 구체적인 실패 사유가 있다면 이를 반환
     return error.response?.data || { status: 400, message: "수정 중 오류 발생" };
+  }
+};
+
+//회원탈퇴
+export const deleteAccount = async () => {
+  try {
+    // client.js에서 baseURL: '.../api'로 설정했으므로 뒤쪽 경로만 적습니다.
+    const response = await client.delete('/users/me/detail');
+    return response.data; // { status: 200, message: "..." }
+  } catch (error) {
+    console.error("회원 탈퇴 API 에러:", error.response?.data || error.message);
+    throw error;
   }
 };

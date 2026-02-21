@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { styles } from '../../../src/styles/authStyles';
 
 export default function ResetPassword() {
@@ -24,6 +24,7 @@ export default function ResetPassword() {
 
   return (
     <View style={styles.step2Container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <Text style={styles.title}>PastUs</Text>
       
       <View style={styles.inputGroup}>

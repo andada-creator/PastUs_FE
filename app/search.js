@@ -4,20 +4,21 @@ import { useRouter, Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../src/api/client';
 
 import PostCard from '../src/components/main/PostCard'; 
 import { searchPosts } from '../src/api/postService';
 
 export default function SearchScreen() {
   const router = useRouter();
-  const PRIMARY_400 = '#A8C3FF'; // 🚀 시안의 포인트 컬러
+  const PRIMARY_400 = '#A8C3FF'; 
 
-  // 🚀 15개 전체 태그 명단
-  const ALL_TAGS = [
-    "전체", "과제/팀플", "군대", "대학원", "성적", "새내기", "연애", "자취", 
-    "장학금", "전과", "졸업", "취업", "편입", "휴학/복학", "N수/반수"
-  ];
-
+//   // 15개 전체 태그 명단
+//   const ALL_TAGS = [
+//     "전체", "과제/팀플", "군대", "대학원", "성적", "새내기", "연애", "자취", 
+//     "장학금", "전과", "졸업", "취업", "편입", "휴학/복학", "N수/반수"
+//   ];
+  const [allTags, setAllTags] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [recentTags, setRecentTags] = useState([]);  
   const [filteredTags, setFilteredTags] = useState([]);
@@ -29,14 +30,31 @@ export default function SearchScreen() {
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
 
   useEffect(() => {
-    const initData = async () => {
-      try {
-        const saved = await AsyncStorage.getItem('recent_search_tags');
-        if (saved) setRecentTags(JSON.parse(saved));
-      } catch (e) { console.log("데이터 로딩 실패", e); }
-    };
-    initData();
-  }, []);
+  const initData = async () => {
+    try {
+      // 1. 로컬 저장소에서 '최근 검색 태그' 가져오기 (내 기억)
+      const saved = await AsyncStorage.getItem('recent_search_tags');
+      if (saved) setRecentTags(JSON.parse(saved));
+
+      // 2. 서버(API)에서 '전체 상황 태그' 가져오기 (서버의 상식)
+      // 백엔드 팀원분이 만든 GET /tags/situations 호출
+      const res = await api.get('/tags/situations'); 
+      setAllTags(res.data); // 서버에서 준 [{id: 1, name: '과제/팀플'}, ...] 저장
+
+      // 3. 인기 태그 가져오기 (GET /tags/trending)
+      // 백엔드가 TrendingTagsResponse.success()를 쓰므로 
+      // 구조에 따라 res.data.data 또는 res.data를 확인해야 합니다.
+      const trendingRes = await api.get('/tags/trending');
+      setTrendingTags(trendingRes.data.data || trendingRes.data);
+      
+      console.log("초기 데이터 로딩 완료!");
+    } catch (e) {
+      console.log("데이터 초기화 실패(로컬 or 서버):", e);
+    }
+  };
+
+  initData();
+}, []);
 
   const handleInputChange = (text) => {
     if (text.length <= 30) {
@@ -44,8 +62,10 @@ export default function SearchScreen() {
       if (text.trim().length > 0) {
         setViewState('typing'); //
         const query = text.startsWith('#') ? text.substring(1) : text;
-        const filtered = ALL_TAGS.filter(tag => tag.toLowerCase().includes(query.toLowerCase()));
-        setFilteredTags(filtered);
+        const filtered = allTags
+        .filter(tag => tag.name.toLowerCase().includes(query.toLowerCase()))
+        .map(tag => tag.name); // 이름만 추출
+      setFilteredTags(filtered);
       } else {
         setViewState('initial'); //
       }
@@ -117,10 +137,10 @@ export default function SearchScreen() {
                 <Text style={styles.subInfo}>토큰 사용하기</Text>
               </View>
               <View style={styles.tagWrapper}>
-                {ALL_TAGS.map((tag, i) => (
-                  <Pressable key={i} style={styles.tagBadge} onPress={() => handleSearch(tag)}>
-                    <Text style={styles.tagText}>#{tag}</Text>
-                  </Pressable>
+                {allTags.map((tag, i) => (
+                    <Pressable key={i} style={styles.tagBadge} onPress={() => handleSearch(tag.name)}>
+                        <Text style={styles.tagText}>#{tag.name}</Text>
+                    </Pressable>
                 ))}
               </View>
               {recentTags.length > 0 && (
@@ -173,7 +193,7 @@ export default function SearchScreen() {
           )}
         </ScrollView>
 
-        {/* 🚀 결과창 하단 탭 바 (제공해주신 디자인 적용) */}
+        {/*  결과창 하단 탭 바 (제공해주신 디자인 적용) */}
         {viewState === 'results' && (
           <View style={styles.tabBarContainer}>
             <Pressable onPress={() => router.replace('/main')} style={[styles.tabItem, { borderRightWidth: 1, borderColor: '#F0F0F0' }]}>
@@ -183,7 +203,7 @@ export default function SearchScreen() {
 
             <View style={styles.fabContainer}>
               <View style={styles.fabBackground}>
-                {/* 🚀 + 누르면 게시글 작성 창으로 이동 */}
+                {/*  + 누르면 게시글 작성 창으로 이동 */}
                 <Pressable style={styles.fabButton} onPress={() => router.push('/posts/create')}>
                   <Ionicons name="add" size={35} color="white" />
                 </Pressable>

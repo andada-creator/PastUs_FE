@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 const client = axios.create({
-  baseURL: 'http://백엔드주소/api', //
+  baseURL: 'http://192.168.219.168:8080', //
   headers: {
     'Content-Type': 'application/json',
   },
@@ -21,3 +21,4 @@ client.interceptors.request.use(
 );
 
 export default client;
+

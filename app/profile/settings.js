@@ -5,7 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker'; 
-import { getAccountDetail, updateAccountInfo } from '../../src/api/userService';
+import * as SecureStore from 'expo-secure-store';
+import { getAccountDetail, updateAccountInfo, deleteAccount } from '../../src/api/userService';
 
 export default function AccountSettingsScreen() {
   const router = useRouter();
@@ -43,15 +44,29 @@ export default function AccountSettingsScreen() {
   };
 
   // 🚀 2. 비밀번호 변경 실행
-  const handlePwUpdate = () => {
-    if (newPw === confirmPw && newPw !== '') {
-      Alert.alert("성공", "비밀번호가 변경되었습니다.");
-      setPwModalVisible(false); // 성공 시 닫기
-      setNewPw(''); setConfirmPw('');
-    } else {
-      Alert.alert("오류", "비밀번호가 일치하지 않습니다.");
+  const handlePwUpdate = async () => {
+  if (newPw !== '' && newPw === confirmPw) {
+    try {
+      // 1. 서버에 변경 요청을 보냅니다.
+      const result = await updateAccountInfo({ password: newPw });
+
+      // 2. 서버 응답 확인 (상태 코드가 200인 경우)
+      if (result.status === 200 || result.message?.includes("성공")) {
+        Alert.alert("성공", "비밀번호가 실제 DB에서 변경되었습니다.");
+        setPwModalVisible(false);
+        setNewPw(''); 
+        setConfirmPw('');
+      } else {
+        // 서버에서 에러 메시지를 보낸 경우 (예: 기존 비번과 동일 등)
+        Alert.alert("오류", result.message || "수정에 실패했습니다.");
+      }
+    } catch (error) {
+      Alert.alert("통신 오류", "서버와 연결할 수 없습니다.");
     }
-  };
+  } else {
+    Alert.alert("오류", "비밀번호가 일치하지 않거나 입력되지 않았습니다.");
+  }
+};
 
   // 🚀 3. 프로필 사진 변경 (갤러리 연결)
   const pickImage = async () => {
@@ -77,6 +92,33 @@ export default function AccountSettingsScreen() {
       );
       setUserInfo({ ...userInfo, socialProviders: updated });
     }
+  };
+  // 🚀 5. 회원 탈퇴 실행
+  const handleWithdraw = () => {
+    Alert.alert(
+      "회원 탈퇴",
+      "정말로 탈퇴하시겠습니까? 모든 데이터가 삭제되며 복구할 수 없습니다.",
+      [
+        { text: "취소", style: "cancel" },
+        { 
+          text: "탈퇴하기", 
+          style: "destructive", 
+          onPress: async () => {
+            try {
+              const res = await deleteAccount();
+              if (res.status === 200) {
+                // 토큰 삭제 및 로그인 화면으로 이동
+                await SecureStore.deleteItemAsync('userToken');
+                Alert.alert("알림", "회원 탈퇴가 완료되었습니다.");
+                router.replace('/login'); // 혹은 초기 화면
+              }
+            } catch (e) {
+              Alert.alert("오류", "탈퇴 처리 중 문제가 발생했습니다.");
+            }
+          } 
+        },
+      ]
+    );
   };
 
   if (loading) return <ActivityIndicator size="large" color="#2B57D0" style={{ flex: 1 }} />;
@@ -153,6 +195,11 @@ export default function AccountSettingsScreen() {
           {(userInfo?.socialProviders || []).map((item) => (
             <SocialBar key={item.type} type={item.type} linked={item.linked} email={item.email} onLinkPress={handleSocialLink} />
           ))}
+          {/* 🚀 탈퇴하기 버튼: 로그인 정보 하단에 배치 */}
+          <Pressable style={styles.withdrawBtn} onPress={handleWithdraw}>
+            <Text style={styles.withdrawText}>탈퇴하기</Text>
+          </Pressable>
+
         </View>
       </ScrollView>
 
@@ -342,5 +389,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center' 
   },
-  modalBtnText: { color: '#2B57D0', fontWeight: 'bold' }
+
+  modalBtnText: { color: '#2B57D0', fontWeight: 'bold' },
+
+  //회원탈퇴
+  withdrawBtn: {
+    marginTop: 20, // 로그인 정보와 간격
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  withdrawText: {
+    fontSize: 12,
+    color: '#FF4D4D', 
+    textDecorationLine: 'underline', 
+    fontFamily: 'Pretendard',
+    fontWeight: '400',
+  },
 });

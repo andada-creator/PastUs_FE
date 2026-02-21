@@ -27,7 +27,7 @@ const ArchivePostCard = ({ item, onPress }) => (
           <Text style={styles.trustText}> (신뢰도: {item.trustScore || 50}%)</Text>
         </Text>
       </View>
-      <Text style={styles.dateText}>2026.01.30</Text>
+      <Text style={styles.dateText}>{item.createdAt?.split('T')[0].replace(/-/g, '.') || '2026.02.21'}</Text>
     </View>
 
     <View style={styles.labelGroup}>
@@ -68,7 +68,7 @@ export default function ArchiveScreen() {
 
   const fetchPosts = async () => {
     try {
-      setLoading(false); // 로딩 표시를 위해 잠시 끔
+      setLoading(true); // 로딩 표시를 위해 잠시 끔
       const res = await getArchivePosts(filter, sort); 
       if (res.status === 200) setPosts(res.data.content);
     } catch (e) {
@@ -128,11 +128,11 @@ export default function ArchiveScreen() {
         ) : (
           <FlatList
             data={posts}
-            keyExtractor={(item) => item.postId.toString()}
+            keyExtractor={(item, index) => item.id?.toString() || index.toString()}
             renderItem={({ item }) => (
               <ArchivePostCard 
                 item={item} 
-                onPress={() => router.push(`/posts/${item.postId}`)} //archive에서 경로 변경!
+                onPress={() => router.push(`/posts/${item.id}`)} //archive에서 경로 변경!
               />
             )}
             contentContainerStyle={styles.listContent}

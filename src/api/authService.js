@@ -1,7 +1,7 @@
 import client from './client'; // 🚀 우리가 만든 axios 인스턴스 사용
 
 // 🚀 true면 가짜 로직(123456 등)으로 작동, false면 실제 서버로 요청 보냄!
-const IS_TEST_MODE = true; 
+const IS_TEST_MODE = false; 
 
 /**
  * 1. 아이디 중복 확인
@@ -117,7 +117,7 @@ export const sendSignupAuthCode = async (phoneNumber) => {
 };
 
 /**
- * 5. 최종 회원가입 (테스트 모드 대응)
+ * 5. 회원가입 (테스트 모드 대응)
  */
 export const signupUser = async (finalData) => {
   if (IS_TEST_MODE) {
@@ -145,34 +145,47 @@ export const signupUser = async (finalData) => {
  * 6. 로그인 (테스트용 계정: test / 1234)
  */
 export const loginUser = async (loginId, password) => {
-  if (IS_TEST_MODE) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (loginId === 'test' && password === '1234') {
-          resolve({
-            status: 200,
-            data: {
+  // if (IS_TEST_MODE) {
+  //   return new Promise((resolve, reject) => {
+  //     setTimeout(() => {
+  //       if (loginId === 'test' && password === '1234') {
+  //         resolve({
+  //           status: 200,
+  //           data: {
               
-              token: {accessToken:'mock-token-12345'},
-              user: {userId: 1,userName:'테스터'}
-            }
-          });
-        } else {
-          // 일부러 실패 응답을 줘서 UI의 에러 처리를 확인합니다.
-          resolve({ status: 401, message: '아이디 또는 비밀번호가 틀렸습니다.' });
-        }
-      }, 800);
-    });
-  }
+  //             token: {accessToken:'mock-token-12345'},
+  //             user: {userId: 1,userName:'테스터'}
+  //           }
+  //         });
+  //       } else {
+  //         // 일부러 실패 응답을 줘서 UI의 에러 처리를 확인합니다.
+  //         resolve({ status: 401, message: '아이디 또는 비밀번호가 틀렸습니다.' });
+  //       }
+  //     }, 800);
+  //   });
+  // }
 
   // 실제 서버 연결 시
   try {
-    const response = await client.post('/auth/login', { loginId, password });
-    return response.data;
+    const response = await client.post('/api/auth/login', { loginId, password });
+    // 🚀 서버 응답이 200번대라면 성공 구조를 강제로 만들어 앱에 전달합니다.
+    console.log("서버 응답 데이터:", response.data); 
+    console.log("서버 응답 상태코드:", response.status);
+
+    return {status: response.status, // 200
+      data: response.data      // { accessToken, userId, ... }
+      }
   } catch (error) {
     console.error("로그인 에러:", error.response?.data || error.message);
     return error.response?.data || { status: 401, message: "로그인 실패" };
   }
+};
+
+// 3. 로그아웃
+export const logoutUser = async (accessToken) => {
+  // 로그아웃 요청 시에도 명세서에 따른 LogoutRequest 구조를 맞춥니다.
+  const response = await client.post('/auth/logout', { accessToken });
+  return response.data;
 };
 
 //회원가입 인증 요청 통합함수

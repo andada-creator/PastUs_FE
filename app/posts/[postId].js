@@ -15,19 +15,24 @@ export default function PostDetail() {
   const [isAuthor, setIsAuthor] = useState(false); // 🚀 내 글 여부 확인용
 
   useEffect(() => {
+  if (!postId) return;
+
+  // 1. 조회수 기록 (비동기로 따로 실행 - 화면 로딩 방해 금지)
+  recordPostView(postId);
+
+  // 2. 게시글 데이터 및 태그 로드 함수
   const initData = async () => {
     try {
       setLoading(true);
       const [postRes, tagRes] = await Promise.all([
         getPostDetail(postId),
-        getPostTags(postId).catch(() => ({ data: [] })) // 태그 실패 시 빈 배열 처리
+        getPostTags(postId).catch(() => ({ data: [] }))
       ]);
 
       if (postRes.data) {
         setPost(postRes.data);
         setIsAuthor(postRes.data.isAuthor || false);
       }
-      
       
       if (tagRes.data) {
         setSelectedTags(tagRes.data); 
@@ -40,8 +45,9 @@ export default function PostDetail() {
       setLoading(false);
     }
   };
-  if (postId) initData();
-}, [postId]);
+
+  initData();
+}, [postId]); // postId가 바뀔 때마다 실행
 
   // 삭제 로직 (작성자 전용)
   const handleDelete = () => {

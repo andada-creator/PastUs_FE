@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { View, TextInput, Text, Pressable, Alert } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 
 // 🚀 [수정] 통일된 스타일과 서비스 함수 임포트
 import { styles } from '../../../src/styles/authStyles';
@@ -75,6 +75,7 @@ export default function SignupStep2() {
 
   return (
     <View style={styles.step2Container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <Text style={styles.title}>PastUs</Text>
 
       {/* 아이디 입력 영역 */}

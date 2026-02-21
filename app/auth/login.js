@@ -46,8 +46,8 @@ export default function Login() {
     try {
       const result = await loginUser(id, pw); 
       if (result.status === 200 || result.status === "200") {
-        const token = result.data.token.accessToken; 
-        const userId = result.data.user.userId;
+        const token = result.data.accessToken; 
+        const userId = result.data.userId;
         if (token) {
           await SecureStore.setItemAsync('userToken', token);
           await SecureStore.setItemAsync('userId', String(userId));

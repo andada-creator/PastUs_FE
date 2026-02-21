@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Text, Pressable, ScrollView, Modal, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 // 🚀 API 함수 임포트 추가!
@@ -155,6 +155,7 @@ export default function SignupStep1() {
 
   return (
     <ScrollView style={styles.step1Container} contentContainerStyle={ styles.step1ScrollContent}>
+      <Stack.Screen options={{ headerShown: false }} />
       <Text style={styles.title}>PastUs</Text>
 
       <View style={styles.inputGroup}>
