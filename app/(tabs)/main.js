@@ -31,10 +31,17 @@ export default function MainScreen() {
         getAllPosts(0, 3), 
       ]);
 
-      if (userRes.status === 200) setUserInfo(userRes.data);
-      if (tagsRes.status === 200) setPopularTags(tagsRes.data);
-      if (popRes.status === 200) setPopularPosts(popRes.data.slice(0, 3)); 
-      if (recentRes.status === 200) setRecentPosts(recentRes.data.content);
+      // 1. 사용자 정보
+if (userRes.status === 200) setUserInfo(userRes.data);
+
+// 2. 인기 태그: TrendingTagsResponse 내부의 'tags' 배열을 가져와야 합니다.
+if (tagsRes.status === 200) setPopularTags(tagsRes.data.tags || []); 
+
+// 3. 인기글: 리스트 형태인지 확인 후 슬라이싱
+if (popRes.status === 200) setPopularPosts(popRes.data.slice(0, 3)); 
+
+// 4. 전체글: Page 객체의 'content' 배열에 접근
+if (recentRes.status === 200) setRecentPosts(recentRes.data.content);
 
     } catch (error) {
       console.log("데이터 로딩 중 에러:", error);

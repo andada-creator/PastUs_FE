@@ -1,7 +1,9 @@
-import client from './client'; // 🚀 우리가 만든 axios 인스턴스 사용
+import * as SecureStore from 'expo-secure-store'; 
+import client from './client'; // 기존 axios 클라이언트
+ 
 
-// 🚀 true면 가짜 로직(123456 등)으로 작동, false면 실제 서버로 요청 보냄!
-const IS_TEST_MODE = false; 
+// true면 가짜 로직(123456 등)으로 작동, false면 실제 서버로 요청 보냄!
+const IS_TEST_MODE = true; 
 
 /**
  * 1. 아이디 중복 확인
@@ -141,43 +143,50 @@ export const signupUser = async (finalData) => {
   }
 };
 
+// /**
+//  * 6. 로그인 (테스트용 계정: test / 1234)
+//  */
+// export const loginUser = async (loginData) => {
+//   try {
+//     const response = await client.post('/api/auth/login', loginData);
+    
+//     // 로그인이 성공했을 때 토큰을 저장하는 이 부분에서 에러가 났을 거예요.
+//     if (response.data.accessToken) {
+//       await SecureStore.setItemAsync('userToken', response.data.accessToken);
+//     }
+    
+//     return response.data;
+//   } catch (error) {
+//     console.error("로그인 에러:", error.message);
+//     throw error;
+//   }
+// };
+
 /**
- * 6. 로그인 (테스트용 계정: test / 1234)
+ * 6. 로그인 (테스트용 기본값: testuser / 1234)
  */
-export const loginUser = async (loginId, password) => {
-  // if (IS_TEST_MODE) {
-  //   return new Promise((resolve, reject) => {
-  //     setTimeout(() => {
-  //       if (loginId === 'test' && password === '1234') {
-  //         resolve({
-  //           status: 200,
-  //           data: {
-              
-  //             token: {accessToken:'mock-token-12345'},
-  //             user: {userId: 1,userName:'테스터'}
-  //           }
-  //         });
-  //       } else {
-  //         // 일부러 실패 응답을 줘서 UI의 에러 처리를 확인합니다.
-  //         resolve({ status: 401, message: '아이디 또는 비밀번호가 틀렸습니다.' });
-  //       }
-  //     }, 800);
-  //   });
-  // }
-
-  // 실제 서버 연결 시
+export const loginUser = async (loginData) => {
+  // 만약 인자가 없으면 기본 테스트 계정으로 시도함
+  const payload = loginData || { loginId: 'testuser', password: '1234' };
+  
   try {
-    const response = await client.post('/api/auth/login', { loginId, password });
-    // 🚀 서버 응답이 200번대라면 성공 구조를 강제로 만들어 앱에 전달합니다.
-    console.log("서버 응답 데이터:", response.data); 
-    console.log("서버 응답 상태코드:", response.status);
-
-    return {status: response.status, // 200
-      data: response.data      // { accessToken, userId, ... }
+    const response = await client.post('/api/auth/login', payload);
+    
+    // SecureStore는 웹 브라우저에서 에러가 날 수 있으므로 체크가 필요합니다.
+    if (response.data.accessToken) {
+      try {
+        await SecureStore.setItemAsync('userToken', response.data.accessToken);
+      } catch (e) {
+        console.warn("SecureStore를 사용할 수 없는 환경입니다. (웹 등)");
+        // 웹 테스트 중이라면 임시로 localStorage 사용 가능
+        // localStorage.setItem('userToken', response.data.accessToken);
       }
+    }
+    
+    return response.data;
   } catch (error) {
     console.error("로그인 에러:", error.response?.data || error.message);
-    return error.response?.data || { status: 401, message: "로그인 실패" };
+    throw error;
   }
 };
 

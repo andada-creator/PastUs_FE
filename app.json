@@ -30,7 +30,8 @@
       "expo-router",
       "expo-secure-store",
       "expo-font"
-    ]
+    ],
+    "platforms": ["ios", "android", "web"]
   }
 }
 

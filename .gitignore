@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 HEAD
+=======
+>>>>>>> 032bc7941f1cd9def6d894cc3085021438f52d44
 # Logs
 logs
 *.log
@@ -138,6 +141,7 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+<<<<<<< HEAD
 
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
@@ -181,3 +185,5 @@ yarn-error.*
 /ios
 /android
 7403bcd (Initial commit)
+=======
+>>>>>>> 032bc7941f1cd9def6d894cc3085021438f52d44
